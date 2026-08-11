@@ -8,7 +8,7 @@ By using Novel Studio, you agree that:
 
 - repository code and original documentation are provided under the [Apache License 2.0](LICENSE); third-party references remain subject to the terms described in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md);
 - model output is non-deterministic and may contain factual, continuity, originality, legal, or editorial errors;
-- the project does not guarantee literary quality, publication acceptance, readership, revenue, or fitness for a particular platform;
+- the project does not guarantee literary quality, publication acceptance, readership, commercial outcomes, or fitness for a particular platform;
 - the Skill does not automatically log in to, upload to, or submit work to external platforms;
 - you are responsible for the rights to your inputs, human review of outputs, backups, final edits, and compliance with applicable laws, platform rules, and content policies.
 
@@ -20,7 +20,7 @@ This is an independent community project and is not an official OpenAI product o
 
 - 仓库代码和原创文档按 [Apache License 2.0](LICENSE) 提供；第三方参考仍受 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 所列条款约束；
 - 模型输出具有非确定性，可能包含事实、连续性、原创性、法律或编辑错误；
-- 本项目不保证文学质量、投稿通过、读者规模、收益或特定平台适用性；
+- 本项目不保证文学质量、投稿通过、读者规模、商业结果或特定平台适用性；
 - Skill 不会自动登录外部平台，也不会自动上传或提交作品；
 - 你需要对输入内容的权利、输出的人工作审、备份、最终编辑，以及遵守适用法律、平台规则和内容政策负责。
 
