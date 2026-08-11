@@ -1,6 +1,6 @@
 # 第三方方法来源与通知
 
-本文件记录 Novel Studio Skill 参考过的五个公开项目、其公开许可证信息和仅限于抽象方法层面的采用情况。来源记录以 [`skills/novel-studio/references/method-sources.md`](skills/novel-studio/references/method-sources.md) 为准；本文件不是法律意见。
+本文件记录 Novel Studio Skill 参考过的五个公开项目、其公开许可证信息和仅限于抽象方法层面的采用情况。来源记录以 [`plugins/novel-studio-skill/skills/novel-studio/references/method-sources.md`](plugins/novel-studio-skill/skills/novel-studio/references/method-sources.md) 为准；本文件不是法律意见。
 
 当前仓库没有把下列项目作为运行时依赖，也没有把其代码、受表达保护的文本、规则文件或示例打包进来。许可证状态按查阅到的仓库内容记录；许可证不完整的来源不会被当作可再分发依赖。
 
@@ -36,4 +36,4 @@ This section is the English counterpart of the Chinese notice above. Novel Studi
 
 - Implementations in this repository were written independently for this workflow; considering an abstract method is not the same as copying an implementation or protected expression.
 - Sources without clear licensing evidence may provide research leads only. In particular, no content from `leenbj/novel-creator-skill` is distributed, downloaded, installed, built, or executed by this project.
-- When an upstream source or license changes, update this notice and `skills/novel-studio/references/method-sources.md` before deciding whether a new release remains appropriate.
+- When an upstream source or license changes, update this notice and `plugins/novel-studio-skill/skills/novel-studio/references/method-sources.md` before deciding whether a new release remains appropriate.
