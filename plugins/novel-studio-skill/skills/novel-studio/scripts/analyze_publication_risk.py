@@ -49,7 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("paths", nargs="*", help="章节 Markdown/TXT 文件或目录")
     parser.add_argument(
         "--project-root",
-        help="Novel Studio 项目目录；优先读取其中的 正文/ 或 chapters/",
+        help="OpenCreator Novel 项目目录；优先读取其中的 正文/ 或 chapters/",
     )
     parser.add_argument(
         "--anchor",

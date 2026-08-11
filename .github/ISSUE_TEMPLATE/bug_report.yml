@@ -62,7 +62,7 @@ body:
     attributes:
       label: "版本信息 / Versions"
       description: "填写 Python、插件版本或提交哈希；不要填写任何令牌。"
-      placeholder: "Python 3.10; plugin 0.1.0; commit …"
+      placeholder: "Python 3.10; plugin 0.2.0; commit …"
     validations:
       required: true
 

@@ -1,6 +1,6 @@
 # 第三方方法来源与通知
 
-本文件记录 Novel Studio Skill 参考过的五个公开项目、其公开许可证信息和仅限于抽象方法层面的采用情况。来源记录以 [`plugins/novel-studio-skill/skills/novel-studio/references/method-sources.md`](plugins/novel-studio-skill/skills/novel-studio/references/method-sources.md) 为准；本文件不是法律意见。
+本文件记录 OpenCreator Novel（内部 Skill 名 `novel-studio`）参考过的五个公开项目、其公开许可证信息和仅限于抽象方法层面的采用情况。来源记录以 [`plugins/novel-studio-skill/skills/novel-studio/references/method-sources.md`](plugins/novel-studio-skill/skills/novel-studio/references/method-sources.md) 为准；本文件不是法律意见。
 
 当前仓库没有把下列项目作为运行时依赖，也没有把其代码、受表达保护的文本、规则文件或示例打包进来。许可证状态按查阅到的仓库内容记录；许可证不完整的来源不会被当作可再分发依赖。
 
@@ -22,7 +22,7 @@
 
 # Third-party method references and notices
 
-This section is the English counterpart of the Chinese notice above. Novel Studio Skill does not bundle the following projects as runtime dependencies and does not redistribute their code, protected prose, rule files, or examples. License status is recorded from the repository evidence available at review time; an incomplete license claim is not treated as permission to redistribute.
+This section is the English counterpart of the Chinese notice above. OpenCreator Novel (internal Skill name `novel-studio`) does not bundle the following projects as runtime dependencies and does not redistribute their code, protected prose, rule files, or examples. License status is recorded from the repository evidence available at review time; an incomplete license claim is not treated as permission to redistribute.
 
 | Source | Verified license status | Abstract methods considered | Content not copied / explicitly excluded |
 | --- | --- | --- | --- |

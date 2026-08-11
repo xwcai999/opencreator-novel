@@ -186,7 +186,7 @@ def render_active_items(items: list[dict[str, str]]) -> str:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="审计 Novel Studio 待兑现台账")
+    parser = argparse.ArgumentParser(description="审计 OpenCreator Novel 待兑现台账")
     parser.add_argument("--project-root", required=True)
     parser.add_argument("--target-chapter", type=int, default=0)
     args = parser.parse_args()

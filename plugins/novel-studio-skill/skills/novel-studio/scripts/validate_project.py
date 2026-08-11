@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate objective Novel Studio project invariants without modifying the project."""
+"""Validate objective OpenCreator Novel project invariants without modifying the project."""
 
 from __future__ import annotations
 
@@ -354,7 +354,7 @@ def validate_project(root: Path) -> dict[str, object]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="校验 Novel Studio 项目结构和客观连续性")
+    parser = argparse.ArgumentParser(description="校验 OpenCreator Novel 项目结构和客观连续性")
     parser.add_argument("--project-root", required=True)
     parser.add_argument("--output")
     return parser

@@ -204,7 +204,7 @@ def _validate_ai_evaluation(
     if payload.get("blind") is not True:
         raise ValueError("模型评审必须声明 blind: true")
     if payload.get("rubric") != list(RUBRIC):
-        raise ValueError("模型评审 rubric 与 Novel Studio 统一量表不一致")
+        raise ValueError("模型评审 rubric 与 OpenCreator Novel 统一量表不一致")
 
     candidates = payload.get("candidates")
     if not isinstance(candidates, dict) or set(candidates) != CANDIDATE_LABELS:

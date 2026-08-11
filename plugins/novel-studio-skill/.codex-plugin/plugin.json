@@ -1,15 +1,16 @@
 {
   "name": "novel-studio-skill",
-  "version": "0.1.0",
-  "description": "Plan, draft, revise, review, and package Chinese fiction with file-based continuity and deterministic validation.",
+  "version": "0.2.0",
+  "description": "OpenCreator's auditable workflow for planning, drafting, revising, reviewing, and packaging Chinese fiction.",
   "author": {
     "name": "xwcai999",
     "url": "https://github.com/xwcai999"
   },
-  "homepage": "https://github.com/xwcai999/novel-studio-skill",
-  "repository": "https://github.com/xwcai999/novel-studio-skill",
+  "homepage": "https://github.com/xwcai999/opencreator-novel",
+  "repository": "https://github.com/xwcai999/opencreator-novel",
   "license": "Apache-2.0",
   "keywords": [
+    "OpenCreator",
     "中文小说",
     "小说创作",
     "大纲规划",
@@ -19,14 +20,14 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "Novel Studio",
+    "displayName": "OpenCreator Novel",
     "shortDescription": "File-based Chinese fiction planning, writing, and review.",
     "longDescription": "Plan, draft, continue, revise, review, migrate, and package Chinese fiction with explicit reader promises, continuity state, deterministic project checks, and publication-readiness gates.",
     "developerName": "xwcai999",
     "category": "Productivity",
-    "websiteURL": "https://github.com/xwcai999/novel-studio-skill",
-    "privacyPolicyURL": "https://github.com/xwcai999/novel-studio-skill/blob/main/PRIVACY.md",
-    "termsOfServiceURL": "https://github.com/xwcai999/novel-studio-skill/blob/main/TERMS.md",
+    "websiteURL": "https://github.com/xwcai999/opencreator-novel",
+    "privacyPolicyURL": "https://github.com/xwcai999/opencreator-novel/blob/main/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/xwcai999/opencreator-novel/blob/main/TERMS.md",
     "capabilities": [
       "planning",
       "drafting",

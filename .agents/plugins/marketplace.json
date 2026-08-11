@@ -1,7 +1,7 @@
 {
   "name": "novel-studio-community",
   "interface": {
-    "displayName": "Novel Studio Community"
+    "displayName": "OpenCreator Novel"
   },
   "plugins": [
     {

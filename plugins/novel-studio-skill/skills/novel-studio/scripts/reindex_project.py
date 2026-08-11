@@ -62,7 +62,7 @@ def build_index(root: Path) -> dict[str, Any]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="从 Markdown 权威数据重建 Novel Studio 索引")
+    parser = argparse.ArgumentParser(description="从 Markdown 权威数据重建 OpenCreator Novel 索引")
     parser.add_argument("--project-root", required=True)
     parser.add_argument("--output")
     return parser

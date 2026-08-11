@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shared, dependency-light helpers for Novel Studio scripts."""
+"""Shared, dependency-light helpers for OpenCreator Novel scripts."""
 
 from __future__ import annotations
 

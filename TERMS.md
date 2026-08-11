@@ -4,7 +4,7 @@ Effective date / 生效日期：2026-08-11
 
 ## English
 
-By using Novel Studio, you agree that:
+By using OpenCreator Novel, you agree that:
 
 - repository code and original documentation are provided under the [Apache License 2.0](LICENSE); third-party references remain subject to the terms described in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md);
 - model output is non-deterministic and may contain factual, continuity, originality, legal, or editorial errors;
@@ -16,7 +16,7 @@ This is an independent community project and is not an official OpenAI product o
 
 ## 中文
 
-使用 Novel Studio 即表示你同意：
+使用 OpenCreator Novel 即表示你同意：
 
 - 仓库代码和原创文档按 [Apache License 2.0](LICENSE) 提供；第三方参考仍受 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 所列条款约束；
 - 模型输出具有非确定性，可能包含事实、连续性、原创性、法律或编辑错误；

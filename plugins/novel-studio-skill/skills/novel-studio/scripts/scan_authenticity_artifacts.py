@@ -190,7 +190,7 @@ def build_parser() -> argparse.ArgumentParser:
         description="只读定位中文小说中的流程泄漏、模板化解释和真实性修订候选"
     )
     parser.add_argument("paths", nargs="*", help="章节 Markdown/TXT 文件或目录")
-    parser.add_argument("--project-root", help="Novel Studio 项目目录；优先读取 正文/ 或 chapters/")
+    parser.add_argument("--project-root", help="OpenCreator Novel 项目目录；优先读取 正文/ 或 chapters/")
     parser.add_argument("--chapter", type=int, help="只分析指定章节号")
     parser.add_argument("--json", action="store_true", help="输出 JSON")
     parser.add_argument(

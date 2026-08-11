@@ -50,7 +50,7 @@ def build_parser() -> argparse.ArgumentParser:
         description="只读分析中文小说对白、段落、重复句式、章末结构和分析腔趋势"
     )
     parser.add_argument("paths", nargs="*", help="章节 Markdown 文件或目录")
-    parser.add_argument("--project-root", help="Novel Studio 项目目录；优先分析其中的 正文/ 或 chapters/")
+    parser.add_argument("--project-root", help="OpenCreator Novel 项目目录；优先分析其中的 正文/ 或 chapters/")
     parser.add_argument("--window-size", type=int, help="跨章窗口大小；默认把全书约分为四段")
     parser.add_argument("--json", action="store_true", help="输出 JSON")
     return parser

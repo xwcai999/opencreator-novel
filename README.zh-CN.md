@@ -1,8 +1,8 @@
-# Novel Studio Skill
+# OpenCreator Novel
 
 [English README](README.md)
 
-Novel Studio 是一个独立的 Codex 插件/standalone skill，用于中文小说的规划、写作、续写、修订、审查、迁移与交付包装。它把读者体验、人物选择和可验证的连续性作为事实基础，并将索引、上下文包、指标和审稿报告与正文分离，使派生证据可以重复生成。
+OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生态的小说成员。为保持兼容，安装后的插件仍叫 `novel-studio-skill`，Skill 调用方式仍为 `$novel-studio`。它用于中文小说的规划、写作、续写、修订、审查、迁移与交付包装，并将索引、上下文包、指标和审稿报告与正文分离，使派生证据可以重复生成。
 
 ## 能力概览
 
@@ -17,7 +17,7 @@ Novel Studio 是一个独立的 Codex 插件/standalone skill，用于中文小�
 
 ## 为什么有用
 
-小说项目积累事实的速度，往往超过聊天记录可靠记忆的能力。Novel Studio 将事实变得可检查：正文和 frontmatter 保持权威，索引、报告和上下文包则是可重建的派生证据。待兑现台账能发现过早兑现或长期遗忘的承诺；项目校验与接受记录让交接可审计；审查按硬错误、阅读阻断项和工艺警告分层，而不是用单一分数掩盖问题。
+小说项目积累事实的速度，往往超过聊天记录可靠记忆的能力。OpenCreator Novel 将事实变得可检查：正文和 frontmatter 保持权威，索引、报告和上下文包则是可重建的派生证据。待兑现台账能发现过早兑现或长期遗忘的承诺；项目校验与接受记录让交接可审计；审查按硬错误、阅读阻断项和工艺警告分层，而不是用单一分数掩盖问题。
 
 这是工作流指导与工具，不是自动质量或投稿保证。创作方向、最终改稿以及任何外部提交决策仍由人负责。
 
@@ -27,7 +27,7 @@ Novel Studio 是一个独立的 Codex 插件/standalone skill，用于中文小�
 
 ### 作为 Codex 插件安装
 
-1. 按固定版本添加本仓库市场：`codex plugin marketplace add xwcai999/novel-studio-skill --ref v0.1.0`。
+1. 按固定版本添加本仓库市场：`codex plugin marketplace add xwcai999/opencreator-novel --ref v0.2.0`。
 2. 安装插件：`codex plugin add novel-studio-skill@novel-studio-community`。
 3. 新建一个 Codex 会话，让插件注册表重新加载。
 4. 使用 `$novel-studio` 描述小说任务。默认界面提示词也记录在 [`plugins/novel-studio-skill/skills/novel-studio/agents/openai.yaml`](plugins/novel-studio-skill/skills/novel-studio/agents/openai.yaml)。
@@ -78,7 +78,7 @@ python scripts/validate_project.py --project-root path/to/book
 ## 目录结构
 
 ```text
-novel-studio-skill/
+opencreator-novel/
 ├── .agents/plugins/marketplace.json # 仓库 marketplace 清单
 ├── plugins/novel-studio-skill/
 │   ├── .codex-plugin/plugin.json    # 插件清单
@@ -116,6 +116,10 @@ novel-studio-skill/
 - 任何脚本都不保证文学质量、平台接受或其他结果。投稿、法律清理、版权审查与外部提交仍由你负责。
 - 真实性流程是保守的修订辅助，不是 AI 检测器、抄袭检查器，也不是规避检测的方法。接受候选改动前必须结合上下文进行人工判断。
 - 项目刻意避免第二套隐藏真值、权限绕过、危险递归操作、强制章节公式和自动覆盖正文。
+
+## OpenCreator 生态
+
+本仓库遵循 OpenCreator 的共享契约：源代码与用户作品、运行证据分离；密钥不进入 Git；派生文件可重建；对外发布必须人工确认；英文与简体中文说明保持同步。兄弟项目包括 [OpenCreator Music](https://github.com/xwcai999/opencreator-music)、[OpenCreator Dashboard](https://github.com/xwcai999/opencreator-dashboard) 和 [OpenCreator Family Video](https://github.com/xwcai999/opencreator-family-video)。
 
 ## 第三方方法参考
 

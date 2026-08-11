@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Initialize a new Novel Studio project without overwriting existing files."""
+"""Initialize a new OpenCreator Novel project without overwriting existing files."""
 
 from __future__ import annotations
 
@@ -53,7 +53,7 @@ DIRECTORIES = (
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="初始化 Novel Studio 小说项目")
+    parser = argparse.ArgumentParser(description="初始化 OpenCreator Novel 小说项目")
     parser.add_argument("--project-root", required=True)
     parser.add_argument("--title", required=True)
     parser.add_argument("--scope", choices=sorted(SCOPES), required=True)

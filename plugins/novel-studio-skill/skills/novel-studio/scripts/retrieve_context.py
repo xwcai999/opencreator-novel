@@ -94,7 +94,7 @@ def retrieve(root: Path, query: str, top_k: int = 6) -> dict[str, Any]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="检索与剧情任务相关的 Novel Studio 文件片段")
+    parser = argparse.ArgumentParser(description="检索与剧情任务相关的 OpenCreator Novel 文件片段")
     parser.add_argument("--project-root", required=True)
     parser.add_argument("--query", required=True)
     parser.add_argument("--top-k", type=int, default=6)

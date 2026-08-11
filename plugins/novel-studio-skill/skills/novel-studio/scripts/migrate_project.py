@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Copy a legacy novel-planner project into a new Novel Studio project."""
+"""Copy a legacy novel-planner project into a new OpenCreator Novel project."""
 
 from __future__ import annotations
 

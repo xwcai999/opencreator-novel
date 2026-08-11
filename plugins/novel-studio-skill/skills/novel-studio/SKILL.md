@@ -3,7 +3,7 @@ name: novel-studio
 description: Plan, draft, continue, revise, review, migrate, package, and create covers for short-, medium-, or long-form Chinese fiction. Use when Codex needs to start or maintain a novel project, design characters or worldbuilding, create full/volume/chapter outlines, write or repair chapters, run automated publication-readiness pilots and blind full-text reviews, reduce formulaic or AI-like prose through evidence-based authenticity revision, migrate a novel-planner project, prepare platform-facing synopsis copy, or produce a cover through $codex-gpt-image without any pen name or author attribution.
 ---
 
-# Novel Studio
+# OpenCreator Novel
 
 把中文小说创作视为“读者体验与人物选择驱动的创作 + 可验证的连续性管理”。使用 Markdown 正文与 frontmatter 作为唯一权威数据；索引、上下文包、分析指标和审稿报告都是可再生证据，不得反向覆盖正文事实。
 

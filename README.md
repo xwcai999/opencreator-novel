@@ -1,8 +1,8 @@
-# Novel Studio Skill
+# OpenCreator Novel
 
 [中文 README](README.zh-CN.md)
 
-Novel Studio is an independent Codex plugin/standalone skill for planning, drafting, continuing, revising, reviewing, migrating, and packaging Chinese fiction. It treats reader experience, character choices, and verifiable continuity as the source of truth, while keeping indexes, context packs, metrics, and review reports reproducible and separate from the manuscript.
+OpenCreator Novel is the fiction member of the [OpenCreator](https://github.com/xwcai999/opencreator) ecosystem. Its installed plugin remains `novel-studio-skill`, and its compatible Skill invocation remains `$novel-studio`. It plans, drafts, continues, revises, reviews, migrates, and packages Chinese fiction while keeping indexes, context packs, metrics, and review reports reproducible and separate from the manuscript.
 
 ## What it provides
 
@@ -17,7 +17,7 @@ The included Python tools are small, deterministic command-line utilities. The m
 
 ## Why use it
 
-Novel work accumulates facts faster than a chat transcript can reliably remember them. Novel Studio makes those facts inspectable: the manuscript and frontmatter remain authoritative, while indexes, reports, and context packs are derived evidence that can be rebuilt. The ledger catches premature or forgotten promises; validation and acceptance records make hand-offs auditable; and the review workflow separates hard errors, reading blockers, and craft warnings instead of hiding them in a score.
+Novel work accumulates facts faster than a chat transcript can reliably remember them. OpenCreator Novel makes those facts inspectable: the manuscript and frontmatter remain authoritative, while indexes, reports, and context packs are derived evidence that can be rebuilt. The ledger catches premature or forgotten promises; validation and acceptance records make hand-offs auditable; and the review workflow separates hard errors, reading blockers, and craft warnings instead of hiding them in a score.
 
 This is guidance and tooling, not an automatic quality or publication guarantee. A human still owns the creative direction, final edits, and any external submission decision.
 
@@ -27,7 +27,7 @@ See the bilingual [Privacy Policy](PRIVACY.md), [Terms of Use](TERMS.md), and [S
 
 ### Codex plugin installation
 
-1. Add this repository as a pinned marketplace: `codex plugin marketplace add xwcai999/novel-studio-skill --ref v0.1.0`.
+1. Add this repository as a pinned marketplace: `codex plugin marketplace add xwcai999/opencreator-novel --ref v0.2.0`.
 2. Install the plugin: `codex plugin add novel-studio-skill@novel-studio-community`.
 3. Start a new Codex session so the plugin registry reloads.
 4. Invoke the skill with `$novel-studio` and describe the novel task. The default interface prompt is also recorded in [`plugins/novel-studio-skill/skills/novel-studio/agents/openai.yaml`](plugins/novel-studio-skill/skills/novel-studio/agents/openai.yaml).
@@ -78,7 +78,7 @@ Full continuity validation requires the v2 project layout described in `referenc
 ## Project layout
 
 ```text
-novel-studio-skill/
+opencreator-novel/
 ├── .agents/plugins/marketplace.json # repository marketplace
 ├── plugins/novel-studio-skill/
 │   ├── .codex-plugin/plugin.json    # plugin manifest
@@ -116,6 +116,10 @@ Each prompt can be pasted into a Codex session after the plugin is loaded.
 - No script promises literary quality, platform acceptance, readership, or any other outcome. Publication, legal clearance, copyright review, and external submission remain your responsibility.
 - The authenticity workflow is a conservative revision aid, not an AI detector, plagiarism checker, or method for evading detection. Human/contextual judgment is required before accepting a candidate change.
 - The project intentionally avoids a second hidden source of truth, permission bypasses, dangerous recursive operations, forced chapter formulas, and automatic manuscript overwrites.
+
+## OpenCreator ecosystem
+
+This repository follows OpenCreator's shared contract: source code stays separate from user works and runtime evidence; secrets remain outside Git; derived artifacts are rebuildable; external publishing requires human confirmation; and English and Simplified Chinese documentation stay aligned. The sibling projects are [OpenCreator Music](https://github.com/xwcai999/opencreator-music), [OpenCreator Dashboard](https://github.com/xwcai999/opencreator-dashboard), and [OpenCreator Family Video](https://github.com/xwcai999/opencreator-family-video).
 
 ## Third-party method references
 
