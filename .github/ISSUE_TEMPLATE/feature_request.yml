@@ -1,0 +1,53 @@
+name: "Feature request / 功能建议"
+description: "提出可验证、与项目目标相关的改进建议。Suggest a focused, testable improvement."
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请先搜索已有 issue。不要上传用户稿件、密钥、私人数据或大体积缓存；使用最小、虚构的例子。
+        Please search existing issues first. Do not upload manuscripts, secrets, private data, or generated caches.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "要解决的问题 / Problem"
+      description: "描述当前限制、用户场景和可观察影响，而不是只描述实现。"
+      placeholder: "当用户……时，目前无法…… / When users …, they cannot …"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "建议方案 / Proposal"
+      description: "说明期望行为、输入/输出和边界。"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "替代方案 / Alternatives"
+      description: "列出考虑过的替代做法及其取舍；可填写“无”。"
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "验收标准 / Acceptance criteria"
+      description: "给出可测试的成功条件，必要时附最小虚构示例。"
+      placeholder: |
+        - [ ] …
+        - [ ] …
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "提交前确认 / Checklist"
+      options:
+        - label: "该建议不要求提交用户内容、凭据或本机绝对路径。 / This request does not require user content, credentials, or machine-specific paths."
+          required: true
+        - label: "如果涉及外部封面服务，我接受其保持显式可选且不由本仓库保存凭据。 / External cover integrations may remain explicit, optional, and credential-free in this repository."
+          required: true

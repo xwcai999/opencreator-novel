@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "type": "style-calibration-evaluation",
+  "project": "{{project_id}}",
+  "calibration_id": "{{calibration_id}}",
+  "blind": true,
+  "rubric": [
+    "target-reader-fit",
+    "voice-distinctiveness",
+    "cross-chapter-sustainability",
+    "character-elasticity",
+    "ai-artifact-risk"
+  ],
+  "candidates": {
+    "A": {"file": "candidate-a.md", "sha256": "{{candidate_a_sha256}}"},
+    "B": {"file": "candidate-b.md", "sha256": "{{candidate_b_sha256}}"},
+    "C": {"file": "candidate-c.md", "sha256": "{{candidate_c_sha256}}"}
+  },
+  "evaluators": [
+    {
+      "evaluator_id": "reviewer-001",
+      "context_id": "{{isolated_context_id_1}}",
+      "isolated_context": true,
+      "generated_candidates": false,
+      "saw_candidate_sources": false,
+      "saw_style_labels": false,
+      "saw_model_identity": false,
+      "ranking": ["{{rank_1_first}}", "{{rank_1_second}}", "{{rank_1_third}}"],
+      "rationale": "{{rationale_1}}"
+    },
+    {
+      "evaluator_id": "reviewer-002",
+      "context_id": "{{isolated_context_id_2}}",
+      "isolated_context": true,
+      "generated_candidates": false,
+      "saw_candidate_sources": false,
+      "saw_style_labels": false,
+      "saw_model_identity": false,
+      "ranking": ["{{rank_2_first}}", "{{rank_2_second}}", "{{rank_2_third}}"],
+      "rationale": "{{rationale_2}}"
+    },
+    {
+      "evaluator_id": "reviewer-003",
+      "context_id": "{{isolated_context_id_3}}",
+      "isolated_context": true,
+      "generated_candidates": false,
+      "saw_candidate_sources": false,
+      "saw_style_labels": false,
+      "saw_model_identity": false,
+      "ranking": ["{{rank_3_first}}", "{{rank_3_second}}", "{{rank_3_third}}"],
+      "rationale": "{{rationale_3}}"
+    }
+  ],
+  "aggregation": {
+    "method": "borda-3-2-1",
+    "scores": {"A": 0, "B": 0, "C": 0},
+    "winner": ""
+  },
+  "tie_break": null
+}

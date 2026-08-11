@@ -1,0 +1,84 @@
+name: "Bug report / 缺陷报告"
+description: "报告可复现的错误或回归。Report a reproducible bug or regression."
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请先确认没有重复 issue。不要粘贴用户稿件、API key、令牌、私钥或未脱敏日志；必要时只描述最小复现。
+        Please search for duplicates first. Do not include manuscripts, API keys, tokens, private keys, or unsanitized logs.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: "问题摘要 / Summary"
+      description: "清楚描述发生了什么，以及影响了哪项功能。"
+      placeholder: "运行某命令时出现…… / When running …, … happens."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "复现步骤 / Reproduction steps"
+      description: "提供最小、可公开的输入和逐步命令。请使用虚构内容。"
+      placeholder: |
+        1. …
+        2. …
+        3. …
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "预期行为 / Expected behavior"
+      description: "说明你认为应该发生什么。"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: "实际行为 / Actual behavior"
+      description: "说明实际结果，并附脱敏后的错误信息（如有）。"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: operating_system
+    attributes:
+      label: "操作系统 / Operating system"
+      options:
+        - "Ubuntu / Linux"
+        - "Windows"
+        - "macOS"
+        - "其他 / Other"
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: "版本信息 / Versions"
+      description: "填写 Python、插件版本或提交哈希；不要填写任何令牌。"
+      placeholder: "Python 3.10; plugin 0.1.0; commit …"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: "脱敏日志 / Sanitized logs"
+      description: "可选。提交前删除路径中的个人信息、稿件内容、凭据和内部地址。"
+      render: text
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "提交前确认 / Checklist"
+      options:
+        - label: "我已搜索重复 issue，并确认内容不含用户稿件、密钥或其他敏感信息。 / I searched for duplicates and removed sensitive data."
+          required: true
+        - label: "我已阅读 SECURITY.md，知道安全漏洞应通过私密渠道报告。 / I know security vulnerabilities must be reported privately."
+          required: true

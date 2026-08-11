@@ -1,0 +1,37 @@
+---
+type: style-calibration
+project: {{project_id}}
+calibration-id: {{calibration_id}}
+status: evaluated
+evaluation-mode: ai-panel
+blind-labels: true
+candidates: [A, B, C]
+selected-candidate: "{{selected_candidate}}"
+mix-sources: []
+evaluation-file: panel-evaluation.json
+---
+
+# 单书文风校准
+
+## 控制场景
+
+- POV：{{pov}}
+- 人物目标：{{character_goal}}
+- 固定事实：{{fixed_facts}}
+- 必须发生的动作：{{required_actions}}
+- 信息边界：{{information_boundary}}
+- 结束节点：{{ending_point}}
+
+## 匿名候选
+
+- A：`candidate-a.md`
+- B：`candidate-b.md`
+- C：`candidate-c.md`
+
+## 模型盲评结论
+
+- 胜出候选：{{selected_candidate}}
+- 汇总规则：Borda 3-2-1；平票时使用新的隔离复评。
+- 评审限制：{{evaluation_limitations}}
+
+候选来源、风格标签和模型身份对评审隐藏。此结论只用于本书起始文风，不代表真实读者市场数据。

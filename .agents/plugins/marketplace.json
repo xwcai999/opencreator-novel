@@ -1,0 +1,20 @@
+{
+  "name": "novel-studio-community",
+  "interface": {
+    "displayName": "Novel Studio Community"
+  },
+  "plugins": [
+    {
+      "name": "novel-studio-skill",
+      "source": {
+        "source": "local",
+        "path": "./plugins/novel-studio-skill"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

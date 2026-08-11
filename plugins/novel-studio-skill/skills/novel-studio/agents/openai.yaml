@@ -1,0 +1,4 @@
+interface:
+  display_name: "Novel Studio"
+  short_description: "中文小说规划、固定主笔创作、自动盲审、投稿验收与封面工作流"
+  default_prompt: "使用 $novel-studio 规划、创作或审查中文小说；投稿型长篇先通过自动试写和纯正文盲审，再扩写与交付。"

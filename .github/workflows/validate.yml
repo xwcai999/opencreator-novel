@@ -1,0 +1,64 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.10", "3.x"]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install test dependency
+        run: python -m pip install --upgrade pip Pillow
+
+      # This check is self-contained; it intentionally does not use a
+      # machine-specific system Skill validator or an absolute local path.
+      - name: Validate plugin manifest and Skill frontmatter
+        shell: python
+        run: |
+          import json
+          from pathlib import Path
+
+          manifest_path = Path("plugins/novel-studio-skill/.codex-plugin/plugin.json")
+          skill_path = Path("plugins/novel-studio-skill/skills/novel-studio/SKILL.md")
+          manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+          import re
+
+          assert manifest.get("name") == "novel-studio-skill", "manifest.name must match the plugin folder"
+          assert re.fullmatch(r"\d+\.\d+\.\d+", manifest.get("version", "")), "manifest.version must be strict semver"
+          assert isinstance(manifest.get("description"), str) and manifest["description"], "manifest.description is required"
+          assert isinstance(manifest.get("author"), dict) and manifest["author"].get("name"), "manifest.author.name is required"
+          assert isinstance(manifest.get("skills"), str) and manifest["skills"], "manifest.skills is required"
+          assert manifest["skills"].startswith("./"), "manifest.skills must be a relative ./ path"
+          plugin_root = manifest_path.parent.parent
+          assert (plugin_root / manifest["skills"]).is_dir(), "manifest.skills must point to an existing directory"
+          assert isinstance(manifest.get("interface"), dict), "manifest.interface must be an object"
+          for key in ("displayName", "shortDescription", "longDescription", "developerName", "category", "websiteURL", "privacyPolicyURL", "termsOfServiceURL", "capabilities", "defaultPrompt"):
+              assert manifest["interface"].get(key), f"manifest.interface.{key} is required"
+          for key in ("websiteURL", "privacyPolicyURL", "termsOfServiceURL"):
+              assert manifest["interface"][key].startswith("https://"), f"manifest.interface.{key} must use https://"
+
+          skill = skill_path.read_text(encoding="utf-8")
+          assert skill.startswith("---\n"), "SKILL.md must start with frontmatter"
+          assert "\n---\n" in skill[4:], "SKILL.md frontmatter must have a closing delimiter"
+
+      - name: Run unittest suite
+        run: python -m unittest discover -s tests -p "test_*.py" -v
