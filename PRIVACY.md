@@ -17,3 +17,11 @@ OpenCreator Novel 是一个基于本地文件的 Codex Skill。本仓库内置�
 可选封面流程会把图片生成交给另行安装的 `$codex-gpt-image` Skill。本项目不捆绑该集成；生成过程受所用服务及 Codex 宿主的隐私条款约束。发送正文、参考图或个人信息前，请先审阅相应条款。
 
 请勿把私密稿件、凭据、个人数据或未公开投稿材料提交到公开仓库。安全问题请按 [SECURITY.md](SECURITY.md) 的方式报告。
+
+### Wawa Writer submission boundary
+
+OpenCreator's Wawa Writer (蛙蛙写作) workflow is an unofficial, offline preparation aid. It does not log in to Wawa, retain credentials, upload manuscripts, or submit works. It validates and packages only local files selected by the user; the user must review materials and use the official platform directly.
+
+### 蛙蛙写作投稿边界
+
+OpenCreator 的蛙蛙写作流程是非官方的离线准备辅助工具，不会登录蛙蛙写作、保存凭据、上传稿件或提交作品。它只校验和整理用户明确选择的本地文件；材料审核及在官方平台上的操作均由用户自行完成。

@@ -2,7 +2,7 @@
 
 [中文 README](README.zh-CN.md)
 
-OpenCreator Novel is the fiction member of the [OpenCreator](https://github.com/xwcai999/opencreator) ecosystem. Its installed plugin remains `novel-studio-skill`, and its compatible Skill invocation remains `$novel-studio`. It plans, drafts, continues, revises, reviews, migrates, and packages Chinese fiction while keeping indexes, context packs, metrics, and review reports reproducible and separate from the manuscript.
+OpenCreator Novel is the fiction member of the [OpenCreator](https://github.com/xwcai999/opencreator) ecosystem. Its installed plugin remains `novel-studio-skill` and contains two separately invokable Skills: `$novel-studio` for fiction work and `$wawa-submission` for unofficial, offline Wawa Writer submission-material checks. The latter can be used with a Novel Studio project or installed alone with a metadata file and manuscript.
 
 ## What it provides
 
@@ -12,6 +12,7 @@ OpenCreator Novel is the fiction member of the [OpenCreator](https://github.com/
 - **Review and revision:** deterministic project validation, chapter acceptance evidence, reader/style review, stage review, prose-trend evidence, and conservative authenticity-revision candidates. Reports never overwrite manuscript facts.
 - **Migration and delivery:** safe migration from an older `novel-planner` project, isolated derived output, publication-readiness pilots, blind full-text checks, and submission-oriented packaging guidance.
 - **Covers:** an optional `$codex-gpt-image` workflow can generate the complete cover and title in one model-native image. The skill does not read or store OAuth credentials; the legacy local title-overlay script is not the current cover path.
+- **Wawa submission adapter (unofficial):** prepares a material sheet and performs local file/metadata checks. Integrated mode reuses Novel Studio evidence; standalone mode needs only metadata plus a manuscript. It never logs in, uploads, accepts agreements, or submits.
 
 The included Python tools are small, deterministic command-line utilities. The model-orchestration rules live in [`plugins/novel-studio-skill/skills/novel-studio/SKILL.md`](plugins/novel-studio-skill/skills/novel-studio/SKILL.md) and its directly linked references.
 
@@ -27,16 +28,25 @@ See the bilingual [Privacy Policy](PRIVACY.md), [Terms of Use](TERMS.md), and [S
 
 ### Codex plugin installation
 
-1. Add this repository as a pinned marketplace: `codex plugin marketplace add xwcai999/opencreator-novel --ref v0.2.0`.
+1. Add this repository as a pinned marketplace: `codex plugin marketplace add xwcai999/opencreator-novel --ref v0.3.0`.
 2. Install the plugin: `codex plugin add novel-studio-skill@novel-studio-community`.
 3. Start a new Codex session so the plugin registry reloads.
-4. Invoke the skill with `$novel-studio` and describe the novel task. The default interface prompt is also recorded in [`plugins/novel-studio-skill/skills/novel-studio/agents/openai.yaml`](plugins/novel-studio-skill/skills/novel-studio/agents/openai.yaml).
+4. Invoke `$novel-studio` for fiction work or `$wawa-submission` for Wawa material preparation.
 
 For local development, clone the repository and register its root as a marketplace. Keep `plugins/novel-studio-skill/.codex-plugin/plugin.json` and its sibling `skills/` directory together.
 
 ### Standalone installation
 
 No plugin manager is required. Copy `plugins/novel-studio-skill/skills/novel-studio/` into the skills directory used by your Codex-compatible host, preserving `SKILL.md`, `references/`, `scripts/`, `assets/`, and `agents/`. Point your host at that skill (or include the `SKILL.md` instructions in your local workflow), then run the scripts from the copied directory. The `.codex-plugin` manifest is only needed for plugin discovery.
+
+To use only the Wawa adapter, copy `plugins/novel-studio-skill/skills/wawa-submission/` instead. Standalone use does not require `$novel-studio`: provide a metadata JSON and a real local `.txt` or `.docx` manuscript. Legacy `.doc` files are rejected because the standard-library validator cannot parse them reliably.
+
+```powershell
+cd path/to/wawa-submission
+python scripts/validate_submission.py --metadata path/to/metadata.json --manuscript path/to/manuscript.txt --json
+```
+
+The adapter is not affiliated with or endorsed by Wawa Writer. Its local result is not proof of upload acceptance, review approval, or signing. The current public submission page says long-form works reach formal signing at 100,000 Chinese characters and currently does not accept short works; older 20,000/30,000-character form observations are retained only as stale risk notes. Always re-check the current page before submission.
 
 For direct script use:
 
@@ -82,12 +92,9 @@ opencreator-novel/
 ├── .agents/plugins/marketplace.json # repository marketplace
 ├── plugins/novel-studio-skill/
 │   ├── .codex-plugin/plugin.json    # plugin manifest
-│   └── skills/novel-studio/
-│       ├── SKILL.md                # workflow contract and routing
-│       ├── agents/openai.yaml      # display name and default prompt
-│       ├── references/              # planning, chapter, review, schema, cover, and source notes
-│       ├── scripts/                 # deterministic Python tools
-│       └── assets/project-template/ # new-project Markdown templates
+│   └── skills/
+│       ├── novel-studio/             # complete fiction workflow
+│       └── wawa-submission/           # independent/integrated offline adapter
 ├── tests/                           # repository test suite, excluded from the installed plugin
 ├── THIRD_PARTY_NOTICES.md          # third-party methods and license notes
 ├── README.md
@@ -107,6 +114,8 @@ Each prompt can be pasted into a Codex session after the plugin is loaded.
 5. `Use $novel-studio to migrate the old project at <source> to a new empty directory at <target>. Keep the source read-only, report any compatibility warnings, and do not copy unverified cover assets.`
 6. `Use $novel-studio to prepare this long-form manuscript for publication-readiness review. Run the automatic trial-writing gate, stage blind review, and final plain-text checks; stop and report the first blocking failure instead of claiming approval: <project path>.`
 7. `Use $novel-studio to create a cover through $codex-gpt-image for the exact title in 作品.md. Generate the complete image with model-native title text, no pen name, author credit, logo, watermark, or extra slogan, and report the verification evidence without exposing OAuth tokens.`
+8. `Use $wawa-submission in standalone mode to pre-check this metadata JSON and manuscript. Do not invoke $novel-studio, log in, upload, or claim platform acceptance: <paths>.`
+9. `Use $wawa-submission in integrated mode for this Novel Studio project. Reuse existing project evidence, list every user-confirmation field, and keep cached platform rules separate from current page evidence: <project path>.`
 
 ## Privacy, safety, and limits
 

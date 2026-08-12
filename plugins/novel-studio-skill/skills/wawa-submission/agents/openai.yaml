@@ -1,0 +1,4 @@
+interface:
+  display_name: "蛙蛙投稿材料"
+  short_description: "可独立或结合小说项目执行非官方蛙蛙投稿材料预检"
+  default_prompt: "使用 $wawa-submission 以独立或集成模式准备蛙蛙投稿材料；不要登录、上传或声称平台已接受。"

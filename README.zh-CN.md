@@ -2,7 +2,7 @@
 
 [English README](README.md)
 
-OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生态的小说成员。为保持兼容，安装后的插件仍叫 `novel-studio-skill`，Skill 调用方式仍为 `$novel-studio`。它用于中文小说的规划、写作、续写、修订、审查、迁移与交付包装，并将索引、上下文包、指标和审稿报告与正文分离，使派生证据可以重复生成。
+OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生态的小说成员。为保持兼容，安装后的插件仍叫 `novel-studio-skill`，其中包含两个可分别调用的 Skill：`$novel-studio` 负责小说工作流，`$wawa-submission` 负责非官方、离线的蛙蛙投稿材料预检。后者既能配合 Novel Studio 项目使用，也能只安装自身并通过元数据与稿件独立运行。
 
 ## 能力概览
 
@@ -12,6 +12,7 @@ OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生
 - **审查与修订：**确定性项目校验、章节接受证据、读者/文风审查、阶段审查、文体趋势证据和保守的真实性修订候选。报告不会回写或覆盖正文事实。
 - **迁移与交付：**从旧 `novel-planner` 项目安全迁移，隔离派生输出，投稿准备试写、纯正文盲读和面向投稿的包装指导。
 - **封面：**可选的 `$codex-gpt-image` 工作流一次生成完整画面和书名。Skill 不读取或保存 OAuth 凭据；旧的本地叠字脚本不属于当前封面路径。
+- **蛙蛙投稿适配（非官方）：**整理可复制材料单并执行本地文件/字段预检。集成模式可复用 Novel Studio 项目证据；独立模式只需要元数据和稿件。它不会登录、上传、勾选协议或提交。
 
 内置 Python 工具是小型、确定性的命令行程序；模型编排规则位于 [`plugins/novel-studio-skill/skills/novel-studio/SKILL.md`](plugins/novel-studio-skill/skills/novel-studio/SKILL.md) 及其直接链接的参考文件中。
 
@@ -27,16 +28,25 @@ OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生
 
 ### 作为 Codex 插件安装
 
-1. 按固定版本添加本仓库市场：`codex plugin marketplace add xwcai999/opencreator-novel --ref v0.2.0`。
+1. 按固定版本添加本仓库市场：`codex plugin marketplace add xwcai999/opencreator-novel --ref v0.3.0`。
 2. 安装插件：`codex plugin add novel-studio-skill@novel-studio-community`。
 3. 新建一个 Codex 会话，让插件注册表重新加载。
-4. 使用 `$novel-studio` 描述小说任务。默认界面提示词也记录在 [`plugins/novel-studio-skill/skills/novel-studio/agents/openai.yaml`](plugins/novel-studio-skill/skills/novel-studio/agents/openai.yaml)。
+4. 小说创作使用 `$novel-studio`；蛙蛙材料整理使用 `$wawa-submission`。
 
 本地开发时，可克隆仓库并把仓库根目录注册为 marketplace。请保持 `plugins/novel-studio-skill/.codex-plugin/plugin.json` 与同级 `skills/` 目录完整。
 
 ### Standalone 安装
 
 不需要插件管理器。将 `plugins/novel-studio-skill/skills/novel-studio/` 复制到 Codex 兼容宿主使用的 skills 目录，并保留 `SKILL.md`、`references/`、`scripts/`、`assets/` 和 `agents/`。让宿主指向该 Skill（或在本地工作流中加载 `SKILL.md`），再从复制后的目录运行脚本。只有进行插件发现时才需要 `.codex-plugin` 清单。
+
+如果只使用蛙蛙适配器，可单独复制 `plugins/novel-studio-skill/skills/wawa-submission/`。独立模式不依赖 `$novel-studio`，只需提供元数据 JSON 与真实的本地 `.txt` 或 `.docx` 稿件。旧式 `.doc` 无法由标准库可靠解析，因此会明确阻断并要求转换格式。
+
+```powershell
+cd path/to/wawa-submission
+python scripts/validate_submission.py --metadata path/to/metadata.json --manuscript path/to/manuscript.txt --json
+```
+
+本适配器与蛙蛙写作无隶属或背书关系。本地通过不代表上传接受、审核通过或正式签约。当前公开投稿页提示长篇达到 10 万字方可正式签约，并暂不接收短篇；历史 2 万/3 万字表单观察值只作为已过期风险提示保留。真实投稿前必须重新核对当前页面。
 
 直接运行脚本示例：
 
@@ -82,12 +92,9 @@ opencreator-novel/
 ├── .agents/plugins/marketplace.json # 仓库 marketplace 清单
 ├── plugins/novel-studio-skill/
 │   ├── .codex-plugin/plugin.json    # 插件清单
-│   └── skills/novel-studio/
-│       ├── SKILL.md                # 工作流契约与请求路由
-│       ├── agents/openai.yaml      # 显示名称与默认提示词
-│       ├── references/              # 规划、章节、审查、结构、封面与来源说明
-│       ├── scripts/                 # 确定性 Python 工具
-│       └── assets/project-template/ # 新项目 Markdown 模板
+│   └── skills/
+│       ├── novel-studio/             # 完整小说工作流
+│       └── wawa-submission/           # 可独立或集成使用的离线适配器
 ├── tests/                           # 仓库测试，不进入安装插件
 ├── THIRD_PARTY_NOTICES.md          # 第三方方法与许可证说明
 ├── README.md
@@ -107,6 +114,8 @@ opencreator-novel/
 5. `使用 $novel-studio 将旧项目 <源目录> 迁移到新的空目录 <目标目录>。保持源目录只读，报告兼容性警告，不复制未经验证的封面资源。`
 6. `使用 $novel-studio 为这部长篇执行投稿准备审查。运行自动试写门禁、阶段纯正文盲读和最终纯文本检查；遇到第一个阻断失败就停止并报告，不要声称已通过：<项目路径>。`
 7. `使用 $novel-studio 通过 $codex-gpt-image 为 作品.md 中的规范书名制作封面。一次生成完整画面和模型原生书名文字，不要笔名、作者署名、Logo、水印或额外宣传语；报告验证证据，但不要暴露 OAuth token。`
+8. `使用 $wawa-submission 的独立模式预检这份元数据 JSON 和稿件。不要调用 $novel-studio，不要登录、上传或声称平台已接受：<路径>。`
+9. `使用 $wawa-submission 的集成模式处理这个 Novel Studio 项目。复用既有项目证据，列出全部待用户确认字段，并将缓存规则与当前页面证据分开：<项目路径>。`
 
 ## 隐私、安全与限制
 

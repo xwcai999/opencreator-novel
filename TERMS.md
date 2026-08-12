@@ -25,3 +25,13 @@ This is an independent community project and is not an official OpenAI product o
 - 你需要对输入内容的权利、输出的人工作审、备份、最终编辑，以及遵守适用法律、平台规则和内容政策负责。
 
 本项目是独立社区项目，不是 OpenAI 官方产品，也不代表 OpenAI 背书。
+
+### Wawa Writer boundary
+
+- The Wawa Writer (蛙蛙写作) workflow is an unofficial community aid. It prepares and validates local submission materials only; it does not log in, upload, or submit to Wawa.
+- You must personally review the materials and perform any login, upload, or submission on the official platform.
+
+### 蛙蛙写作边界
+
+- 蛙蛙写作流程是非官方社区辅助工具，只离线准备和校验本地投稿材料，不会登录、上传或向蛙蛙写作提交作品。
+- 你必须自行审核材料，并在官方平台完成登录、上传或投稿操作。

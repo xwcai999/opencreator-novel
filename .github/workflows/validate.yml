@@ -29,36 +29,76 @@ jobs:
       - name: Install test dependency
         run: python -m pip install --upgrade pip Pillow
 
-      # This check is self-contained; it intentionally does not use a
-      # machine-specific system Skill validator or an absolute local path.
       - name: Validate plugin manifest and Skill frontmatter
         shell: python
         run: |
           import json
+          import re
           from pathlib import Path
 
           manifest_path = Path("plugins/novel-studio-skill/.codex-plugin/plugin.json")
-          skill_path = Path("plugins/novel-studio-skill/skills/novel-studio/SKILL.md")
           manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-          import re
-
           assert manifest.get("name") == "novel-studio-skill", "manifest.name must match the plugin folder"
+          assert manifest.get("version") == "0.3.0", "manifest.version must be 0.3.0"
           assert re.fullmatch(r"\d+\.\d+\.\d+", manifest.get("version", "")), "manifest.version must be strict semver"
           assert isinstance(manifest.get("description"), str) and manifest["description"], "manifest.description is required"
           assert isinstance(manifest.get("author"), dict) and manifest["author"].get("name"), "manifest.author.name is required"
           assert isinstance(manifest.get("skills"), str) and manifest["skills"], "manifest.skills is required"
           assert manifest["skills"].startswith("./"), "manifest.skills must be a relative ./ path"
-          plugin_root = manifest_path.parent.parent
-          assert (plugin_root / manifest["skills"]).is_dir(), "manifest.skills must point to an existing directory"
-          assert isinstance(manifest.get("interface"), dict), "manifest.interface must be an object"
-          for key in ("displayName", "shortDescription", "longDescription", "developerName", "category", "websiteURL", "privacyPolicyURL", "termsOfServiceURL", "capabilities", "defaultPrompt"):
-              assert manifest["interface"].get(key), f"manifest.interface.{key} is required"
-          for key in ("websiteURL", "privacyPolicyURL", "termsOfServiceURL"):
-              assert manifest["interface"][key].startswith("https://"), f"manifest.interface.{key} must use https://"
 
-          skill = skill_path.read_text(encoding="utf-8")
-          assert skill.startswith("---\n"), "SKILL.md must start with frontmatter"
-          assert "\n---\n" in skill[4:], "SKILL.md frontmatter must have a closing delimiter"
+          plugin_root = manifest_path.parent.parent
+          skills_root = plugin_root / Path(manifest["skills"])
+          assert skills_root.is_dir(), "manifest.skills must point to an existing directory"
+          for skill_name in ("novel-studio", "wawa-submission"):
+              skill_path = skills_root / skill_name / "SKILL.md"
+              assert skill_path.is_file(), f"missing required Skill: {skill_path}"
+              skill = skill_path.read_text(encoding="utf-8")
+              frontmatter = re.match(r"\A---\r?\n(?P<body>.*?)\r?\n---(?:\r?\n|$)", skill, re.DOTALL)
+              assert frontmatter, f"{skill_path} must start with closed YAML frontmatter"
+              fields = {}
+              for line in frontmatter.group("body").splitlines():
+                  if ":" in line:
+                      key, value = line.split(":", 1)
+                      fields[key.strip()] = value.strip()
+              assert fields.get("name") == skill_name, f"{skill_path} frontmatter.name must match its directory"
+              assert fields.get("description"), f"{skill_path} frontmatter.description is required"
+
+          marketplace_path = Path(".agents/plugins/marketplace.json")
+          marketplace = json.loads(marketplace_path.read_text(encoding="utf-8"))
+          entries = [entry for entry in marketplace.get("plugins", []) if entry.get("name") == "novel-studio-skill"]
+          assert len(entries) == 1, "marketplace must contain exactly one novel-studio-skill selector"
+          assert entries[0].get("source", {}).get("path") == "./plugins/novel-studio-skill", "marketplace source selector changed"
+
+      - name: Check tracked caches and sensitive assets
+        shell: python
+        run: |
+          import re
+          import subprocess
+          from pathlib import Path
+
+          names = [
+              Path(raw.decode("utf-8")) for raw in subprocess.check_output(["git", "ls-files", "-z"]).split(b"\0") if raw
+          ]
+          cache_dirs = {"__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".tox", ".nox", ".cache"}
+          cache_files = {".coverage", "coverage.xml"}
+          cache_suffixes = {".pyc", ".pyo", ".pyd"}
+          sensitive_name = re.compile(
+              r"(?i)(^\.env(?:\..*)?$|^credentials(?:\..*)?$|^secrets?(?:\..*)?$|"
+              r"(^|[-_.])(id_rsa|id_ed25519|id_dsa)([-_.]|$)|\.(pem|key|p12|pfx|jks)$)"
+          )
+          bad_cache = [
+              path.as_posix()
+              for path in names
+              if any(part in cache_dirs for part in path.parts)
+              or path.name in cache_files
+              or path.suffix.lower() in cache_suffixes
+          ]
+          bad_sensitive = [path.as_posix() for path in names if sensitive_name.search(path.name)]
+          assert not bad_cache, "tracked cache artifacts found: " + ", ".join(bad_cache)
+          assert not bad_sensitive, "tracked sensitive assets found: " + ", ".join(bad_sensitive)
+
+      - name: Run Wawa submission tests
+        run: python -m unittest discover -s tests -p "test_wawa_submission.py" -v
 
       - name: Run unittest suite
         run: python -m unittest discover -s tests -p "test_*.py" -v

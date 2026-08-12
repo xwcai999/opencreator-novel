@@ -20,3 +20,11 @@
 - 不要在测试 fixture、CI 输出或文档示例中使用真实凭据、用户内容或内部网络地址。
 
 如发现脚本违反上述边界，即使尚未形成可利用漏洞，也请按本文件的私密流程报告。
+
+## Wawa Writer offline boundary
+
+Wawa Writer preparation is deliberately offline and unofficial: it must not request or store platform credentials, automate login, upload manuscripts, or submit works. Report any implementation that crosses this boundary through the private process above.
+
+## 蛙蛙写作离线边界
+
+蛙蛙写作准备流程明确保持离线且非官方：不得索取或保存平台凭据，不得自动登录、上传稿件或提交作品。如发现实现越过该边界，请按上述私密流程报告。
