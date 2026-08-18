@@ -2,7 +2,7 @@
 
 [English README](README.md)
 
-OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生态的小说成员。为保持兼容，安装后的插件仍叫 `novel-studio-skill`，其中包含两个可分别调用的 Skill：`$novel-studio` 负责小说工作流，`$wawa-submission` 负责非官方、离线的蛙蛙投稿材料预检。后者既能配合 Novel Studio 项目使用，也能只安装自身并通过元数据与稿件独立运行。
+OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生态的小说成员。为保持兼容，安装后的插件仍叫 `novel-studio-skill`，其中包含三个可分别调用的 Skill：`$novel-studio` 负责小说工作流，`$wawa-submission` 负责非官方离线投稿材料预检，`$wawa-source` 负责校验、脱敏并聚合用户提供的蛙蛙统计快照。两个蛙蛙 Skill 都可单独安装和使用。
 
 ## 能力概览
 
@@ -13,6 +13,7 @@ OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生
 - **迁移与交付：**从旧 `novel-planner` 项目安全迁移，隔离派生输出，投稿准备试写、纯正文盲读和面向投稿的包装指导。
 - **封面：**可选的 `$codex-gpt-image` 工作流一次生成完整画面和书名。Skill 不读取或保存 OAuth 凭据；旧的本地叠字脚本不属于当前封面路径。
 - **蛙蛙投稿适配（非官方）：**整理可复制材料单并执行本地文件/字段预检。集成模式可复用 Novel Studio 项目证据；独立模式只需要元数据和稿件。它不会登录、上传、勾选协议或提交。
+- **蛙蛙统计数据源（非官方）：**校验本地 `wawa.stats.v1` JSON、检查快照时效、移除作品/账号标识，并生成聚合 JSON 或 Dashboard 契约。它不会打开蛙蛙、登录、抓取页面或采集实时数据。
 
 内置 Python 工具是小型、确定性的命令行程序；模型编排规则位于 [`plugins/novel-studio-skill/skills/novel-studio/SKILL.md`](plugins/novel-studio-skill/skills/novel-studio/SKILL.md) 及其直接链接的参考文件中。
 
@@ -28,10 +29,10 @@ OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生
 
 ### 作为 Codex 插件安装
 
-1. 按固定版本添加本仓库市场：`codex plugin marketplace add xwcai999/opencreator-novel --ref v0.3.0`。
+1. 按固定版本添加本仓库市场：`codex plugin marketplace add xwcai999/opencreator-novel --ref v0.4.0`。
 2. 安装插件：`codex plugin add novel-studio-skill@novel-studio-community`。
 3. 新建一个 Codex 会话，让插件注册表重新加载。
-4. 小说创作使用 `$novel-studio`；蛙蛙材料整理使用 `$wawa-submission`。
+4. 小说创作使用 `$novel-studio`；材料整理使用 `$wawa-submission`；离线统计快照使用 `$wawa-source`。
 
 本地开发时，可克隆仓库并把仓库根目录注册为 marketplace。请保持 `plugins/novel-studio-skill/.codex-plugin/plugin.json` 与同级 `skills/` 目录完整。
 
@@ -47,6 +48,17 @@ python scripts/validate_submission.py --metadata path/to/metadata.json --manuscr
 ```
 
 本适配器与蛙蛙写作无隶属或背书关系。本地通过不代表上传接受、审核通过或正式签约。当前公开投稿页提示长篇达到 10 万字方可正式签约，并暂不接收短篇；历史 2 万/3 万字表单观察值只作为已过期风险提示保留。真实投稿前必须重新核对当前页面。
+
+如果只使用统计数据源，可单独复制 `plugins/novel-studio-skill/skills/wawa-source/`。输入必须是用户自行导出或整理的本地快照；公开项目有意不包含任何已登录采集器。
+
+```powershell
+cd path/to/wawa-source
+python scripts/wawa_snapshot.py validate path/to/snapshot.json --json
+python scripts/wawa_snapshot.py aggregate path/to/snapshot.json --json
+python scripts/wawa_snapshot.py dashboard path/to/snapshot.json --days 30 --json
+```
+
+未知指标保持 `null`，且不会进入 `availableMetrics`，绝不伪造为 0。Dashboard 输出只有聚合值，不包含作品名、远端 ID、账号、Cookie、令牌或浏览器会话数据。
 
 直接运行脚本示例：
 
@@ -94,7 +106,8 @@ opencreator-novel/
 │   ├── .codex-plugin/plugin.json    # 插件清单
 │   └── skills/
 │       ├── novel-studio/             # 完整小说工作流
-│       └── wawa-submission/           # 可独立或集成使用的离线适配器
+│       ├── wawa-submission/          # 可独立或集成使用的离线适配器
+│       └── wawa-source/              # 可独立使用的离线统计快照适配器
 ├── tests/                           # 仓库测试，不进入安装插件
 ├── THIRD_PARTY_NOTICES.md          # 第三方方法与许可证说明
 ├── README.md
@@ -116,6 +129,7 @@ opencreator-novel/
 7. `使用 $novel-studio 通过 $codex-gpt-image 为 作品.md 中的规范书名制作封面。一次生成完整画面和模型原生书名文字，不要笔名、作者署名、Logo、水印或额外宣传语；报告验证证据，但不要暴露 OAuth token。`
 8. `使用 $wawa-submission 的独立模式预检这份元数据 JSON 和稿件。不要调用 $novel-studio，不要登录、上传或声称平台已接受：<路径>。`
 9. `使用 $wawa-submission 的集成模式处理这个 Novel Studio 项目。复用既有项目证据，列出全部待用户确认字段，并将缓存规则与当前页面证据分开：<项目路径>。`
+10. `使用 $wawa-source 校验并脱敏这份用户提供的 wawa.stats.v1 快照，然后导出 30 天 Dashboard 聚合数据。不要联网，也不要把缺失指标推断为 0：<快照路径>。`
 
 ## 隐私、安全与限制
 
@@ -123,6 +137,7 @@ opencreator-novel/
 - Codex 宿主可能把本次会话的提示词或正文片段发送给所选模型/账户。处理私人或未发表内容前，请检查宿主的数据控制；本 README 不会改变宿主的留存或训练政策。
 - 封面生成是可选操作。只有你请求时才使用 `$codex-gpt-image`/Codex OAuth，凭据仍由宿主控制。不要把 token 粘贴进项目文件或报告。
 - 任何脚本都不保证文学质量、平台接受或其他结果。投稿、法律清理、版权审查与外部提交仍由你负责。
+- 蛙蛙支持是离线、非官方能力。本仓库不包含已登录采集器、浏览器 Profile、平台会话或实时抓取工作流；`$wawa-source` 只接受用户提供的本地快照。
 - 真实性流程是保守的修订辅助，不是 AI 检测器、抄袭检查器，也不是规避检测的方法。接受候选改动前必须结合上下文进行人工判断。
 - 项目刻意避免第二套隐藏真值、权限绕过、危险递归操作、强制章节公式和自动覆盖正文。
 

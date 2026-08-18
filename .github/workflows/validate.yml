@@ -39,7 +39,7 @@ jobs:
           manifest_path = Path("plugins/novel-studio-skill/.codex-plugin/plugin.json")
           manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
           assert manifest.get("name") == "novel-studio-skill", "manifest.name must match the plugin folder"
-          assert manifest.get("version") == "0.3.0", "manifest.version must be 0.3.0"
+          assert manifest.get("version") == "0.4.0", "manifest.version must be 0.4.0"
           assert re.fullmatch(r"\d+\.\d+\.\d+", manifest.get("version", "")), "manifest.version must be strict semver"
           assert isinstance(manifest.get("description"), str) and manifest["description"], "manifest.description is required"
           assert isinstance(manifest.get("author"), dict) and manifest["author"].get("name"), "manifest.author.name is required"
@@ -49,7 +49,7 @@ jobs:
           plugin_root = manifest_path.parent.parent
           skills_root = plugin_root / Path(manifest["skills"])
           assert skills_root.is_dir(), "manifest.skills must point to an existing directory"
-          for skill_name in ("novel-studio", "wawa-submission"):
+          for skill_name in ("novel-studio", "wawa-submission", "wawa-source"):
               skill_path = skills_root / skill_name / "SKILL.md"
               assert skill_path.is_file(), f"missing required Skill: {skill_path}"
               skill = skill_path.read_text(encoding="utf-8")
@@ -84,7 +84,9 @@ jobs:
           cache_suffixes = {".pyc", ".pyo", ".pyd"}
           sensitive_name = re.compile(
               r"(?i)(^\.env(?:\..*)?$|^credentials(?:\..*)?$|^secrets?(?:\..*)?$|"
-              r"(^|[-_.])(id_rsa|id_ed25519|id_dsa)([-_.]|$)|\.(pem|key|p12|pfx|jks)$)"
+              r"(^|[-_.])(id_rsa|id_ed25519|id_dsa)([-_.]|$)|"
+              r"^\.browser-profile$|^(login data|cookies|history|web data|local state|secure preferences)$|"
+              r"\.(pem|key|p12|pfx|jks|sqlite|sqlite3|db|jsonl)$)"
           )
           bad_cache = [
               path.as_posix()
@@ -99,6 +101,9 @@ jobs:
 
       - name: Run Wawa submission tests
         run: python -m unittest discover -s tests -p "test_wawa_submission.py" -v
+
+      - name: Run Wawa source tests
+        run: python -m unittest discover -s tests -p "test_wawa_source.py" -v
 
       - name: Run unittest suite
         run: python -m unittest discover -s tests -p "test_*.py" -v

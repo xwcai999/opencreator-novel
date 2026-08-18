@@ -1,7 +1,7 @@
 {
   "name": "novel-studio-skill",
-  "version": "0.3.0",
-  "description": "OpenCreator's auditable Chinese-fiction workflow with an optional, unofficial offline Wawa submission adapter.",
+  "version": "0.4.0",
+  "description": "OpenCreator's auditable Chinese-fiction workflow with optional, unofficial offline Wawa submission and statistics adapters.",
   "author": {
     "name": "xwcai999",
     "url": "https://github.com/xwcai999"
@@ -17,7 +17,8 @@
     "章节写作",
     "连续性审查",
     "Codex Skill",
-    "Wawa submission"
+    "Wawa submission",
+    "offline metrics"
   ],
   "skills": "./skills/",
   "interface": {
@@ -35,12 +36,13 @@
       "revision",
       "continuity-review",
       "cover-workflow",
-      "submission-preparation"
+      "submission-preparation",
+      "offline-metrics"
     ],
     "defaultPrompt": [
       "Plan a Chinese novel with a reader promise and first-volume outline.",
       "Continue or review this novel without breaking continuity or character state.",
-      "Prepare Wawa Writer submission materials offline without logging in, uploading, or submitting."
+      "Prepare Wawa Writer submission materials or aggregate a user-provided statistics snapshot offline without logging in, scraping, uploading, or submitting."
     ]
   }
 }

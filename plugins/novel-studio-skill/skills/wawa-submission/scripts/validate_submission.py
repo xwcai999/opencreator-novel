@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import importlib.util
 import json
 import os
 import re
@@ -510,7 +511,113 @@ def _validate_history_images(value: Any, base_dir: Path | None, errors: list[str
     return results
 
 
-def validate_submission(metadata: Mapping[str, Any], *, manuscript: str | Path | Mapping[str, Any] | None = None, project_root: str | Path | None = None, base_dir: str | Path | None = None) -> dict[str, Any]:
+def _load_wawa_source_module() -> Any:
+    """加载同插件中的离线快照模块；独立复制 submission Skill 时允许缺失。"""
+
+    source_path = Path(__file__).resolve().parents[1].parent / "wawa-source" / "scripts" / "wawa_snapshot.py"
+    if not source_path.is_file():
+        raise FileNotFoundError("未找到 wawa-source 快照模块")
+    spec = importlib.util.spec_from_file_location("wawa_source_snapshot_for_submission", source_path)
+    if spec is None or spec.loader is None:
+        raise ImportError("无法加载 wawa-source 快照模块")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _consume_wawa_snapshot(
+    snapshot: Mapping[str, Any] | str | Path | None,
+    snapshot_path: str | Path | None,
+    *,
+    base_dir: Path | None,
+    now: dt.datetime | str | None = None,
+) -> dict[str, Any]:
+    """消费可选的本地脱敏统计快照，不把统计数据当作投稿事实。"""
+
+    provided = snapshot is not None or snapshot_path is not None
+    info: dict[str, Any] = {
+        "provided": provided,
+        "status": "未提供" if not provided else "invalid",
+        "freshness": "未提供" if not provided else "invalid",
+        "errors": [],
+        "warnings": [],
+    }
+    if not provided:
+        return info
+    if snapshot is not None and snapshot_path is not None:
+        info["errors"] = ["snapshot 与 snapshot_path 不能同时提供"]
+        info["warnings"] = ["统计快照无效，未消费；投稿预检未使用统计数据"]
+        return info
+    try:
+        source_module = _load_wawa_source_module()
+        raw: Mapping[str, Any]
+        display_path: str | None = None
+        if snapshot_path is not None:
+            path = _resolve_path(snapshot_path, base_dir)
+            if path is None:
+                raise ValueError("快照路径为空")
+            display_path = _display_path(path, base_dir)
+            with path.open("r", encoding="utf-8") as handle:
+                value = json.load(handle)
+            if not isinstance(value, Mapping):
+                raise ValueError("快照 JSON 须为对象")
+            raw = value
+        elif isinstance(snapshot, Mapping):
+            raw = snapshot
+        else:
+            path = _resolve_path(snapshot, base_dir)
+            if path is None:
+                raise ValueError("快照路径为空")
+            display_path = _display_path(path, base_dir)
+            with path.open("r", encoding="utf-8") as handle:
+                value = json.load(handle)
+            if not isinstance(value, Mapping):
+                raise ValueError("快照 JSON 须为对象")
+            raw = value
+        report = source_module.validate_snapshot(raw, now)
+        if not report.get("ok"):
+            info.update({"status": "invalid", "freshness": "invalid", "errors": list(report.get("errors") or [])})
+            info["warnings"] = ["统计快照无效，未消费；投稿预检未使用统计数据"]
+            if display_path:
+                info["path"] = display_path
+            return info
+        normalised = source_module.normalize_snapshot(raw)
+        info.update(
+            {
+                "status": report.get("status"),
+                "freshness": report.get("freshness"),
+                "captured_at": report.get("captured_at"),
+                "expires_at": report.get("expires_at"),
+                "stale_after": report.get("expires_at"),
+                "ttl_days": report.get("ttl_days"),
+                "source": {"kind": normalised["source"]["kind"], "label": "本地脱敏快照"},
+                "work_count": report.get("work_count", 0),
+            }
+        )
+        if display_path:
+            info["path"] = display_path
+        if report.get("status") == "fresh":
+            info["aggregate"] = source_module.aggregate_snapshot(normalised)
+            info["warnings"] = ["统计来自本地脱敏快照，不代表蛙蛙页面实时数据；未用于补充或覆盖投稿字段"]
+        else:
+            info["warnings"] = ["统计快照已过期，未消费其聚合值；当前结果未实时复核"]
+        return info
+    except Exception as exc:  # noqa: BLE001 - 可选数据源失败不能阻断材料校验
+        info["errors"] = [f"无法读取统计快照: {exc}"]
+        info["warnings"] = ["统计快照无效，未消费；投稿预检未使用统计数据"]
+        return info
+
+
+def validate_submission(
+    metadata: Mapping[str, Any],
+    *,
+    manuscript: str | Path | Mapping[str, Any] | None = None,
+    project_root: str | Path | None = None,
+    base_dir: str | Path | None = None,
+    snapshot: Mapping[str, Any] | str | Path | None = None,
+    snapshot_path: str | Path | None = None,
+    snapshot_now: dt.datetime | str | None = None,
+) -> dict[str, Any]:
     """校验独立稿件或 Novel Studio 集成项目。"""
 
     if not isinstance(metadata, Mapping):
@@ -521,6 +628,9 @@ def validate_submission(metadata: Mapping[str, Any], *, manuscript: str | Path |
     root = Path(base_dir).expanduser().resolve(strict=False) if base_dir else None
     mode = "integrated" if project_root is not None else "independent"
     rules = _rule_cache_status()
+    snapshot_info = _consume_wawa_snapshot(snapshot, snapshot_path, base_dir=root, now=snapshot_now)
+    if snapshot_info["provided"]:
+        warnings.extend(snapshot_info.get("warnings") or [])
     if mode == "independent":
         warnings.append("独立模式仅完成本地材料预检，不代表平台接受、签约或提交成功")
 
@@ -621,6 +731,7 @@ def validate_submission(metadata: Mapping[str, Any], *, manuscript: str | Path |
             "parsed_word_count": None,
             "actual_message": None,
         },
+        "wawa_snapshot": snapshot_info,
     }
     if project_info is not None: result["project"] = project_info
     return result
@@ -647,6 +758,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--metadata", required=True, help="投稿元数据 JSON 文件")
     parser.add_argument("--project-root", help="可选 Novel Studio 项目目录")
     parser.add_argument("--manuscript", help="可选投稿稿件（.doc/.docx/.txt）")
+    parser.add_argument("--snapshot", "--snapshot-path", dest="snapshot_path", help="可选本地蛙蛙统计快照 JSON；只读、过期即标记")
+    parser.add_argument("--snapshot-now", help="可选快照 TTL 判断时间（带时区），主要用于离线测试")
     parser.add_argument("--json", action="store_true", help="以 JSON 输出结果")
     return parser
 
@@ -656,7 +769,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     metadata_path = Path(args.metadata).expanduser().resolve(strict=False)
     try:
         metadata = _load_metadata(metadata_path)
-        result = validate_submission(metadata, manuscript=args.manuscript, project_root=args.project_root, base_dir=metadata_path.parent)
+        result = validate_submission(
+            metadata,
+            manuscript=args.manuscript,
+            project_root=args.project_root,
+            base_dir=metadata_path.parent,
+            snapshot_path=args.snapshot_path,
+            snapshot_now=args.snapshot_now,
+        )
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
         result = {"ok": False, "mode": "independent", "errors": [f"无法读取元数据: {exc}"], "blockers": [], "warnings": []}
     print(json.dumps(result, ensure_ascii=False, indent=2) if args.json else _human_output(result))

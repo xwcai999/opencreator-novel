@@ -2,7 +2,7 @@
 
 [中文 README](README.zh-CN.md)
 
-OpenCreator Novel is the fiction member of the [OpenCreator](https://github.com/xwcai999/opencreator) ecosystem. Its installed plugin remains `novel-studio-skill` and contains two separately invokable Skills: `$novel-studio` for fiction work and `$wawa-submission` for unofficial, offline Wawa Writer submission-material checks. The latter can be used with a Novel Studio project or installed alone with a metadata file and manuscript.
+OpenCreator Novel is the fiction member of the [OpenCreator](https://github.com/xwcai999/opencreator) ecosystem. Its installed plugin remains `novel-studio-skill` and contains three separately invokable Skills: `$novel-studio` for fiction work, `$wawa-submission` for unofficial offline submission-material checks, and `$wawa-source` for validating, redacting, and aggregating user-provided Wawa statistics snapshots. Both Wawa Skills can be installed and used independently.
 
 ## What it provides
 
@@ -13,6 +13,7 @@ OpenCreator Novel is the fiction member of the [OpenCreator](https://github.com/
 - **Migration and delivery:** safe migration from an older `novel-planner` project, isolated derived output, publication-readiness pilots, blind full-text checks, and submission-oriented packaging guidance.
 - **Covers:** an optional `$codex-gpt-image` workflow can generate the complete cover and title in one model-native image. The skill does not read or store OAuth credentials; the legacy local title-overlay script is not the current cover path.
 - **Wawa submission adapter (unofficial):** prepares a material sheet and performs local file/metadata checks. Integrated mode reuses Novel Studio evidence; standalone mode needs only metadata plus a manuscript. It never logs in, uploads, accepts agreements, or submits.
+- **Wawa statistics source (unofficial):** validates local `wawa.stats.v1` JSON, enforces freshness metadata, removes work/account identifiers, and produces aggregate or Dashboard-ready JSON. It never opens Wawa, logs in, scrapes pages, or collects live data.
 
 The included Python tools are small, deterministic command-line utilities. The model-orchestration rules live in [`plugins/novel-studio-skill/skills/novel-studio/SKILL.md`](plugins/novel-studio-skill/skills/novel-studio/SKILL.md) and its directly linked references.
 
@@ -28,10 +29,10 @@ See the bilingual [Privacy Policy](PRIVACY.md), [Terms of Use](TERMS.md), and [S
 
 ### Codex plugin installation
 
-1. Add this repository as a pinned marketplace: `codex plugin marketplace add xwcai999/opencreator-novel --ref v0.3.0`.
+1. Add this repository as a pinned marketplace: `codex plugin marketplace add xwcai999/opencreator-novel --ref v0.4.0`.
 2. Install the plugin: `codex plugin add novel-studio-skill@novel-studio-community`.
 3. Start a new Codex session so the plugin registry reloads.
-4. Invoke `$novel-studio` for fiction work or `$wawa-submission` for Wawa material preparation.
+4. Invoke `$novel-studio` for fiction work, `$wawa-submission` for material preparation, or `$wawa-source` for offline statistics snapshots.
 
 For local development, clone the repository and register its root as a marketplace. Keep `plugins/novel-studio-skill/.codex-plugin/plugin.json` and its sibling `skills/` directory together.
 
@@ -47,6 +48,17 @@ python scripts/validate_submission.py --metadata path/to/metadata.json --manuscr
 ```
 
 The adapter is not affiliated with or endorsed by Wawa Writer. Its local result is not proof of upload acceptance, review approval, or signing. The current public submission page says long-form works reach formal signing at 100,000 Chinese characters and currently does not accept short works; older 20,000/30,000-character form observations are retained only as stale risk notes. Always re-check the current page before submission.
+
+To use only the statistics source, copy `plugins/novel-studio-skill/skills/wawa-source/`. Supply a local snapshot exported or prepared by the user; the public project intentionally contains no authenticated collector.
+
+```powershell
+cd path/to/wawa-source
+python scripts/wawa_snapshot.py validate path/to/snapshot.json --json
+python scripts/wawa_snapshot.py aggregate path/to/snapshot.json --json
+python scripts/wawa_snapshot.py dashboard path/to/snapshot.json --days 30 --json
+```
+
+Unknown metrics remain `null` and are omitted from `availableMetrics`; they are never converted to zero. The Dashboard output contains aggregates only—no work title, remote ID, account, Cookie, token, or browser-session data.
 
 For direct script use:
 
@@ -94,7 +106,8 @@ opencreator-novel/
 │   ├── .codex-plugin/plugin.json    # plugin manifest
 │   └── skills/
 │       ├── novel-studio/             # complete fiction workflow
-│       └── wawa-submission/           # independent/integrated offline adapter
+│       ├── wawa-submission/          # independent/integrated offline adapter
+│       └── wawa-source/              # independent offline snapshot adapter
 ├── tests/                           # repository test suite, excluded from the installed plugin
 ├── THIRD_PARTY_NOTICES.md          # third-party methods and license notes
 ├── README.md
@@ -116,6 +129,7 @@ Each prompt can be pasted into a Codex session after the plugin is loaded.
 7. `Use $novel-studio to create a cover through $codex-gpt-image for the exact title in 作品.md. Generate the complete image with model-native title text, no pen name, author credit, logo, watermark, or extra slogan, and report the verification evidence without exposing OAuth tokens.`
 8. `Use $wawa-submission in standalone mode to pre-check this metadata JSON and manuscript. Do not invoke $novel-studio, log in, upload, or claim platform acceptance: <paths>.`
 9. `Use $wawa-submission in integrated mode for this Novel Studio project. Reuse existing project evidence, list every user-confirmation field, and keep cached platform rules separate from current page evidence: <project path>.`
+10. `Use $wawa-source to validate and redact this user-provided wawa.stats.v1 snapshot, then export a 30-day Dashboard aggregate. Do not access the network or infer missing metrics as zero: <snapshot path>.`
 
 ## Privacy, safety, and limits
 
@@ -123,6 +137,7 @@ Each prompt can be pasted into a Codex session after the plugin is loaded.
 - A Codex host may send prompts or manuscript excerpts to the model/account selected for that session. Review your host's data controls before using private or unpublished material; this README does not change the host's retention or training policy.
 - Cover generation is opt-in. `$codex-gpt-image`/Codex OAuth is used only when you request it, and credentials remain under the host's control. Do not paste tokens into project files or reports.
 - No script promises literary quality, platform acceptance, readership, or any other outcome. Publication, legal clearance, copyright review, and external submission remain your responsibility.
+- Wawa support is offline and unofficial. The repository does not include an authenticated collector, browser profile, platform session, or live scraping workflow; only user-provided local snapshots may enter `$wawa-source`.
 - The authenticity workflow is a conservative revision aid, not an AI detector, plagiarism checker, or method for evading detection. Human/contextual judgment is required before accepting a candidate change.
 - The project intentionally avoids a second hidden source of truth, permission bypasses, dangerous recursive operations, forced chapter formulas, and automatic manuscript overwrites.
 

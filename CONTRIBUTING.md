@@ -38,8 +38,8 @@ PR 描述应说明变更范围、行为影响、验证命令和残余风险，�
 
 ### Wawa Writer boundary
 
-Keep Wawa Writer support offline and unofficial. Tests and fixtures must use fictional local data; never add platform credentials, browser sessions, real account data, login automation, uploads, or submission calls.
+Keep Wawa Writer support offline and unofficial. Tests and fixtures must use fictional local data; never add platform credentials, browser sessions, real account data, authenticated collectors, login automation, uploads, or submission calls. Missing metrics must remain `null`, not fabricated as zero.
 
 ### 蛙蛙写作边界
 
-蛙蛙写作支持必须保持离线和非官方。测试与 fixture 只能使用虚构的本地数据；禁止加入平台凭据、浏览器会话、真实账户数据、登录自动化、上传或投稿调用。
+蛙蛙写作支持必须保持离线和非官方。测试与 fixture 只能使用虚构的本地数据；禁止加入平台凭据、浏览器会话、真实账户数据、已认证采集器、登录自动化、上传或投稿调用。缺失指标必须保持 `null`，不得伪造为 0。

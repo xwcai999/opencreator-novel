@@ -23,8 +23,8 @@
 
 ## Wawa Writer offline boundary
 
-Wawa Writer preparation is deliberately offline and unofficial: it must not request or store platform credentials, automate login, upload manuscripts, or submit works. Report any implementation that crosses this boundary through the private process above.
+Wawa Writer support is deliberately offline and unofficial: it must not request or store platform credentials, automate login, scrape authenticated pages, upload manuscripts, or submit works. `$wawa-source` may read only a user-provided local snapshot and must redact identifiers before Dashboard export. Browser profiles, Cookies, session databases, raw collector logs, real account snapshots, and collectors are prohibited from the repository and release archives.
 
 ## 蛙蛙写作离线边界
 
-蛙蛙写作准备流程明确保持离线且非官方：不得索取或保存平台凭据，不得自动登录、上传稿件或提交作品。如发现实现越过该边界，请按上述私密流程报告。
+蛙蛙写作能力明确保持离线且非官方：不得索取或保存平台凭据，不得自动登录、抓取已认证页面、上传稿件或提交作品。`$wawa-source` 只可读取用户提供的本地快照，并必须在导出 Dashboard 数据前移除标识。浏览器 Profile、Cookie、会话数据库、原始采集日志、真实账号快照及采集器均不得进入仓库或 Release 压缩包。

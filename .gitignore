@@ -24,3 +24,13 @@ env/
 .ruff_cache/
 .coverage
 htmlcov/
+
+# Private platform sessions and runtime evidence
+.browser-profile/
+**/.browser-profile/
+logs/
+snapshots/
+*.sqlite
+*.sqlite3
+*.db
+*.jsonl

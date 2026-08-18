@@ -20,8 +20,8 @@ OpenCreator Novel 是一个基于本地文件的 Codex Skill。本仓库内置�
 
 ### Wawa Writer submission boundary
 
-OpenCreator's Wawa Writer (蛙蛙写作) workflow is an unofficial, offline preparation aid. It does not log in to Wawa, retain credentials, upload manuscripts, or submit works. It validates and packages only local files selected by the user; the user must review materials and use the official platform directly.
+OpenCreator's Wawa Writer (蛙蛙写作) workflows are unofficial and offline. They do not log in to Wawa, retain credentials, scrape pages, upload manuscripts, or submit works. The submission adapter validates local files selected by the user; the statistics source accepts only user-provided local JSON and emits redacted aggregates. It does not bundle a collector or retain work titles, remote identifiers, accounts, Cookies, tokens, or browser sessions in Dashboard output.
 
 ### 蛙蛙写作投稿边界
 
-OpenCreator 的蛙蛙写作流程是非官方的离线准备辅助工具，不会登录蛙蛙写作、保存凭据、上传稿件或提交作品。它只校验和整理用户明确选择的本地文件；材料审核及在官方平台上的操作均由用户自行完成。
+OpenCreator 的蛙蛙写作流程是非官方离线工具，不会登录蛙蛙写作、保存凭据、抓取页面、上传稿件或提交作品。投稿适配器只校验用户选择的本地文件；统计数据源只接受用户提供的本地 JSON，并输出脱敏聚合数据。公开包不含采集器，Dashboard 输出不保留作品名、远端标识、账号、Cookie、令牌或浏览器会话。
