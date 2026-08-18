@@ -55,6 +55,62 @@ class WawaSubmissionTests(unittest.TestCase):
             **kwargs,
         )
 
+    def snapshot(self, **updates: object) -> dict[str, object]:
+        value: dict[str, object] = {
+            "schema_version": "wawa.stats.v1",
+            "captured_at": "2026-08-18T12:00:00+08:00",
+            "ttl_days": 7,
+            "source": {"kind": "synthetic-fixture", "label": "合成测试"},
+            "works": [
+                {
+                    "work_id": "remote-work-001",
+                    "title": "不应被投稿预检读取的作品名",
+                    "metrics": {"chapters": 3, "words": 1000, "followers": 20, "total_revenue": 1.5},
+                    "series": [{"date": "2026-08-18", "followers": 20, "revenue": 1.5}],
+                }
+            ],
+        }
+        value.update(updates)
+        return value
+
+    def test_optional_fresh_snapshot_is_consumed_without_overwriting_submission(self) -> None:
+        result = self.validate(manuscript="book.txt", snapshot=self.snapshot(), snapshot_now="2026-08-18T13:00:00+08:00")
+        self.assertTrue(result["ok"], result)
+        info = result["wawa_snapshot"]
+        self.assertEqual(info["status"], "fresh")
+        self.assertEqual(info["aggregate"]["work_count"], 1)
+        self.assertEqual(info["aggregate"]["totals"]["words"], 1000)
+        self.assertNotIn("remote-work-001", json.dumps(info, ensure_ascii=False))
+        self.assertEqual(result["metadata"]["title"], "测试作品")
+
+    def test_stale_snapshot_is_reported_but_not_consumed(self) -> None:
+        stale = self.snapshot(captured_at="2026-08-01T12:00:00+08:00")
+        works = stale["works"]
+        assert isinstance(works, list)
+        for work in works:
+            assert isinstance(work, dict)
+            work["series"] = []
+        result = self.validate(
+            manuscript="book.txt",
+            snapshot=stale,
+            snapshot_now="2026-08-18T13:00:00+08:00",
+        )
+        self.assertTrue(result["ok"], result)
+        info = result["wawa_snapshot"]
+        self.assertEqual(info["status"], "stale")
+        self.assertNotIn("aggregate", info)
+        self.assertIn("未实时复核", "\n".join(result["warnings"]))
+
+    def test_invalid_snapshot_does_not_make_material_check_use_partial_data(self) -> None:
+        invalid = self.snapshot()
+        invalid.pop("schema_version")
+        result = self.validate(manuscript="book.txt", snapshot=invalid)
+        self.assertTrue(result["ok"], result)
+        info = result["wawa_snapshot"]
+        self.assertEqual(info["status"], "invalid")
+        self.assertNotIn("aggregate", info)
+        self.assertTrue(info["errors"])
+
     def test_independent_txt_mode_passes_without_novel_project(self) -> None:
         result = self.validate(manuscript="book.txt")
         self.assertTrue(result["ok"], result)

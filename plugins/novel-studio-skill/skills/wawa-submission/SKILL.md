@@ -44,6 +44,18 @@ python <本 Skill 目录>/scripts/validate_submission.py `
 
 只传实际存在的路径；不要为了“通过”伪造字数、状态、类目、笔名、收益或证明图片。
 
+## 可选统计快照
+
+同仓安装了 `$wawa-source` 时，可以在材料预检中附带一份作者已经放在本地的 `wawa.stats.v1` JSON 快照：
+
+```powershell
+python <本 Skill 目录>/scripts/validate_submission.py `
+  --metadata <元数据.json> --manuscript <投稿稿件.txt> `
+  --snapshot <本地统计快照.json> --json
+```
+
+该参数只读取、校验并消费快照的 TTL 与聚合统计；它不会用统计数据填写书名、笔名、字数、类目、简介或页面状态，也不会把过期快照当成实时证据。结果中的 `wawa_snapshot` 会记录 `captured_at`、`expires_at`、来源类型、新鲜度和错误/警告。快照无效或过期时，投稿材料预检仍按原有输入继续，但必须明确显示“未消费/未实时复核”。独立复制本 Skill 而没有 `$wawa-source` 时不要传此参数。
+
 ## 工作流
 
 1. 读取 `references/wawa-fields.md`，先检查其规则缓存元数据。`checked_at` 距当前日期超过 `stale_after`（默认 7 天）时，规则一律标记“未实时复核”，不能据此声称页面仍有效。
@@ -76,3 +88,4 @@ python <本 Skill 目录>/scripts/validate_submission.py `
 - 不伪造笔名归属、历史成绩、收益、签约凭证、截图、完结状态、字数或正文；不在仓库加入截图、Logo、收益数据或真实稿件。
 - 不因表单适配改写小说正文、设定或项目事实；创作、连续性和审稿问题交回 `$novel-studio`（仅集成模式）。
 - 页面不可访问或缓存过期时，明确写“未实时复核”；不要把缓存字段当成永久接口文档。
+- 统计快照只能来自本地用户提供的版本化 JSON；不联网、不登录、不读取或保存 Cookie、密码、Token，不上传正文/封面，不提交作品。公开展示前必须使用 `$wawa-source` 的脱敏视图。

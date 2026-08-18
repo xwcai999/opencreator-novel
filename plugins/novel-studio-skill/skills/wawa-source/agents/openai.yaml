@@ -1,0 +1,4 @@
+interface:
+  display_name: "蛙蛙数据快照"
+  short_description: "离线校验、聚合和脱敏蛙蛙统计快照"
+  default_prompt: "使用 $wawa-source 导入并检查本地蛙蛙统计快照；只做离线处理，不联网、不登录、不上传。"
