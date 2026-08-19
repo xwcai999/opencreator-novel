@@ -12,7 +12,7 @@ OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生
 - **审查与修订：**确定性项目校验、章节接受证据、读者/文风审查、阶段审查、文体趋势证据和保守的真实性修订候选。报告不会回写或覆盖正文事实。
 - **迁移与交付：**从旧 `novel-planner` 项目安全迁移，隔离派生输出，投稿准备试写、纯正文盲读和面向投稿的包装指导。
 - **封面：**可选的 `$codex-gpt-image` 工作流一次生成完整画面和书名。Skill 不读取或保存 OAuth 凭据；旧的本地叠字脚本不属于当前封面路径。
-- **蛙蛙投稿适配（非官方）：**整理可复制材料单并执行本地文件/字段预检。集成模式可复用 Novel Studio 项目证据；独立模式只需要元数据和稿件。它不会登录、上传、勾选协议或提交。
+- **蛙蛙投稿适配（非官方）：**整理可复制材料单并执行本地文件/字段预检。集成模式可复用 Novel Studio 项目证据；独立模式只需要元数据和稿件。内置版本化的离线分类/标签快照用于确定性预检，当前页面仍是最终依据。它不会登录、上传、勾选协议或提交。
 - **蛙蛙统计数据源（非官方）：**校验本地 `wawa.stats.v1` JSON、检查快照时效、移除作品/账号标识，并生成聚合 JSON 或 Dashboard 契约。它不会打开蛙蛙、登录、抓取页面或采集实时数据。
 
 内置 Python 工具是小型、确定性的命令行程序；模型编排规则位于 [`plugins/novel-studio-skill/skills/novel-studio/SKILL.md`](plugins/novel-studio-skill/skills/novel-studio/SKILL.md) 及其直接链接的参考文件中。
@@ -29,7 +29,7 @@ OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生
 
 ### 作为 Codex 插件安装
 
-1. 按固定版本添加本仓库市场：`codex plugin marketplace add xwcai999/opencreator-novel --ref v0.4.0`。
+1. 按固定版本添加本仓库市场：`codex plugin marketplace add xwcai999/opencreator-novel --ref v0.5.0`。
 2. 安装插件：`codex plugin add novel-studio-skill@novel-studio-community`。
 3. 新建一个 Codex 会话，让插件注册表重新加载。
 4. 小说创作使用 `$novel-studio`；材料整理使用 `$wawa-submission`；离线统计快照使用 `$wawa-source`。
@@ -47,7 +47,9 @@ cd path/to/wawa-submission
 python scripts/validate_submission.py --metadata path/to/metadata.json --manuscript path/to/manuscript.txt --json
 ```
 
-本适配器与蛙蛙写作无隶属或背书关系。本地通过不代表上传接受、审核通过或正式签约。当前公开投稿页提示长篇达到 10 万字方可正式签约，并暂不接收短篇；历史 2 万/3 万字表单观察值只作为已过期风险提示保留。真实投稿前必须重新核对当前页面。
+本适配器与蛙蛙写作无隶属或背书关系。本地通过不代表上传接受、审核通过或正式签约。`wawa-categories.json` 提供 350 条固定三级路径，`wawa-tags.json` 提供 158 个固定标签候选，二者都是版本化离线参考，不是蛙蛙 API 或永久平台规则。当前公开投稿页提示长篇达到 10 万字方可正式签约；历史 2 万/3 万字表单观察值只作为已过期风险提示保留。三者不得合并为签约保证，真实投稿前必须重新核对当前页面。
+
+从 `v0.4.x` 升级时需注意：`categories` 现在必须精确匹配固定三级路径，`tags` 只填写固定平台标签；作者自定义标签迁移到 `custom_tags` 并等待页面确认。快照外的旧值会失败关闭，不会被静默替换成相似词。
 
 如果只使用统计数据源，可单独复制 `plugins/novel-studio-skill/skills/wawa-source/`。输入必须是用户自行导出或整理的本地快照；公开项目有意不包含任何已登录采集器。
 

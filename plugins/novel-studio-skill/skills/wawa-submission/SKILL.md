@@ -1,6 +1,6 @@
 ---
 name: wawa-submission
-description: Prepare and locally pre-check Wawa Writer (蛙蛙写作) long-form submission materials. Use when Codex needs to adapt an existing $novel-studio project, or perform a standalone offline metadata-plus-manuscript pre-check without a novel project. Never present it as an official Wawa tool or as a guarantee of platform acceptance or signing.
+description: Prepare and locally pre-check Wawa Writer (蛙蛙写作) long-form submission materials. Use it either with an existing $novel-studio project or on its own with local metadata and a manuscript. It uses versioned offline category and tag snapshots, never represents itself as an official Wawa tool, and never guarantees acceptance or signing.
 ---
 
 # 蛙蛙投稿材料与离线预检
@@ -9,22 +9,22 @@ description: Prepare and locally pre-check Wawa Writer (蛙蛙写作) long-form 
 
 ## 双模式路由
 
-先判断安装形态，再选择唯一模式；不要把两个模式拼成第三套小说工作流。
+先判断安装形态，再选择唯一模式；两个模式可以分别使用，不要拼成另一套小说工作流。
 
 ### 集成模式（同仓插件）
 
-当 `novel-studio-skill` 插件已安装且任务需要项目级规划、审稿、封面或连续性证据时：
+当 `novel-studio-skill` 插件已安装，且任务需要项目级规划、审稿、封面或连续性证据时：
 
-1. 需要新建或改写小说时，调用 `$novel-studio` 完成创作工作流；本 Skill 只负责蛙蛙字段、材料单和预检，不复制项目 schema、连续性台账或审稿流程。
+1. 新建或改写小说时，调用 `$novel-studio` 完成创作工作流；本 Skill 只负责蛙蛙字段、材料单和预检，不复制项目 schema、连续性台账或审稿流程。
 2. 完成投稿材料时，读取 `$novel-studio` 的 `作品.md`、正文、封面和已有报告；只把可证明事实映射到元数据，缺失的笔名、三级类目、版权或成绩证明标为“待确认”。
-3. 运行本 Skill 的预检脚本时可传 `--project-root`，但仍应显式传 `--manuscript`（除非脚本契约另有说明）；项目适配器只读取投稿相关文件，不替代 `$novel-studio` 的完整项目校验。
+3. 运行预检脚本时可传 `--project-root`，但仍应显式传 `--manuscript`（除非脚本契约另有说明）；项目适配器只读取投稿相关文件，不替代 `$novel-studio` 的完整项目校验。
 
 ### 独立模式（只复制本 Skill）
 
 当用户只安装 `skills/wawa-submission/`，或没有标准小说项目时：
 
-1. 仅接收一个元数据 JSON 和一个本地投稿稿件（`.docx` 或 `.txt`）；不要求、也不要创建 Novel Studio 项目目录。平台可能接受旧式 `.doc`，但本地标准库无法可靠解析，须先转换为真实 DOCX 或 TXT。
-2. 只做离线材料预检：字段完整性、简介长度、三级类目是否由用户提供、封面/证明文件路径与大小、稿件扩展名和本地字数估算。
+1. 仅接收元数据 JSON 与本地投稿稿件（`.docx` 或 `.txt`）；不要求、也不创建 Novel Studio 项目目录。平台可能接受旧式 `.doc`，但本地标准库无法可靠解析，须先转换为真实 DOCX 或 TXT。
+2. 只做离线材料预检：字段完整性、简介长度、固定分类路径与标签快照、封面/证明文件路径与大小、稿件扩展名和本地字数估算。
 3. 不调用 `$novel-studio`，不读取或猜测项目设定、章节台账、审稿报告，不把独立预检结果写成项目级连续性或出版就绪认证。
 
 独立模式命令：
@@ -44,6 +44,17 @@ python <本 Skill 目录>/scripts/validate_submission.py `
 
 只传实际存在的路径；不要为了“通过”伪造字数、状态、类目、笔名、收益或证明图片。
 
+## 固定分类与标签快照
+
+`references/wawa-categories.json` 保存完整的三级分类路径，`references/wawa-tags.json` 保存固定标签候选。它们是**版本化、离线、非官方**的参考快照：分类来自公开创建页资源的已记录提取，标签来自用户确认的页面状态；两者不是平台 API、永久规则或平台背书。
+
+1. 日常预检从快照中选择精确三级路径和标签，不重新联网抓取，也不凭记忆静默增删词条。
+2. 男频、女频作品的三级路径根必须与频道一致；全频作品可使用快照中的任一合法根路径。
+3. 页面拒绝已有值、快照无法覆盖作品，或用户明确要求刷新时，停止把该值视为已确认；以当前页面为最终依据，并在后续版本整体更新快照。
+4. 自定义标签必须与快照标签分开记录，并在当前页面确认长度、可用性及最终保存值。
+
+这是 `strict-v1` 迁移契约：旧元数据中的 `categories` 必须重新映射为快照内的完整三级路径，`tags` 只存固定平台标签；作者自定义标签移入 `custom_tags`。快照外旧值失败关闭并要求页面确认，不自动替换成相似词。
+
 ## 可选统计快照
 
 同仓安装了 `$wawa-source` 时，可以在材料预检中附带一份作者已经放在本地的 `wawa.stats.v1` JSON 快照：
@@ -58,26 +69,28 @@ python <本 Skill 目录>/scripts/validate_submission.py `
 
 ## 工作流
 
-1. 读取 `references/wawa-fields.md`，先检查其规则缓存元数据。`checked_at` 距当前日期超过 `stale_after`（默认 7 天）时，规则一律标记“未实时复核”，不能据此声称页面仍有效。
-2. 读取 `references/wawa-genres.md`，将其中内容当作非官方、来源授权不完整的选题示例；不得把示例词冒充蛙蛙后台官方类目。三级类目和标签只能填写用户在当前页面看到并确认的原文。
+1. 阅读 `references/wawa-fields.md`，将公开页指导、历史观察和固定快照分层；它们都不能替代当前页面确认。
+2. 阅读 `references/wawa-genres.md`，将其中题材池当作非官方选题示例；不得把示例词冒充后台类目或固定标签。
 3. 读取 `assets/submission-material-template.md`，从权威作品文件或用户输入提取书名、笔名、频道、状态、简介和文件路径；无法证明的值保留“待确认”。
-4. 运行预检脚本，区分 `errors`、`blockers` 和 `warnings`。本地 TXT 字数只是估算，页面解析结果优先。
+4. 使用固定分类/标签快照完成本地映射，再运行预检脚本，区分 `errors`、`blockers` 和 `warnings`。本地 TXT 字数只是估算，页面解析结果优先。
 5. 输出材料单、阻断项/待确认项/非阻断风险，以及本次预检的输入、时间和规则来源。修复材料层问题后可重跑；不要修改正文事实来迎合字段。
+6. 投稿前由用户在目标账号的当前页面复核字段、文件、解析字数、分类、标签和错误提示；页面最终保存值高于一切离线结果。
 
 ## 规则分层（必须分开记录）
 
-- **公开页正式签约口径：**蛙蛙写作公开投稿提示目前写明长篇达到 **10 万字**方可正式签约；这是公开页的当前缓存陈述，仍需提交前实时复核，不是签约保证。
-- **历史表单观察值：**旧快照曾观察到“连载约 2 万字、完结约 3 万字”的状态化表单校验。它不是公开页的正式签约口径，也不是当前一定存在的门槛；只能作为历史风险提示，不能替代实时页面结果。
+- **公开页签约指导：**公开投稿页曾提示长篇达到 **10 万字**方可正式签约；这是公开页面的缓存陈述，提交前仍需复核，不是签约保证。
+- **历史表单观察：**旧快照曾观察到“连载约 2 万字、完结约 3 万字”的状态化表单校验。它不是公开页正式签约口径，也不是当前一定存在的门槛；只能作为历史风险提示。
+- **固定分类与标签快照：**仅用于离线候选和本地一致性检查；页面变更、拒绝或用户要求刷新时必须以当前页面为准。
 
-材料单必须分别记录：公开页正式签约口径、历史 2/3 万观察值、当前页面解析字数、页面状态和实际错误提示。不要把 10 万、2 万、3 万合并成一个“平台门槛”，也不要把任何一个数字写成接受或签约承诺。
+材料单必须分别记录以上三类信息、当前页面解析字数、页面状态和实际错误提示。不要把 10 万、2 万、3 万合并成一个“平台门槛”，也不要把任何一个数字写成接受或签约承诺。
 
 ## 输出要求
 
 交付以下三部分：
 
 - 可复制填写的投稿材料单（正文来源、封面、作品名、笔名、投稿入口、长篇分类、频道、状态、三级类目、标签、正式简介、可选成绩证明）；
-- 阻断项、待确认项、非阻断风险，并注明是本地检查还是实时页面证据；
-- 预检 JSON/人类可读摘要，包含字数来源、规则 `checked_at`、`source`、`confidence`、`stale_after`。
+- 阻断项、待确认项、非阻断风险，并注明是本地检查、离线快照还是实时页面证据；
+- 预检 JSON/人类可读摘要，包含字数来源、规则 `checked_at`、`source`、`confidence`、`stale_after` 和快照版本信息。
 
 简介必须是正式内容且不超过页面当前限制；“暂无简介”等占位内容始终视为阻断。三级类目、标签、授权选项和账号归属无法由本地文件证明时，必须待用户在当前页面确认。
 
@@ -87,5 +100,5 @@ python <本 Skill 目录>/scripts/validate_submission.py `
 - 不自动登录、保存密码或 token，不自动打开提交动作，不自动上传正文、封面或成绩证明；如用户另行授权页面操作，也必须先明确范围并把本 Skill 的本地预检与页面动作分开报告。
 - 不伪造笔名归属、历史成绩、收益、签约凭证、截图、完结状态、字数或正文；不在仓库加入截图、Logo、收益数据或真实稿件。
 - 不因表单适配改写小说正文、设定或项目事实；创作、连续性和审稿问题交回 `$novel-studio`（仅集成模式）。
-- 页面不可访问或缓存过期时，明确写“未实时复核”；不要把缓存字段当成永久接口文档。
+- 页面不可访问、离线规则过期或快照与页面冲突时，明确写“未实时复核”；不要把缓存或快照当成永久接口文档。
 - 统计快照只能来自本地用户提供的版本化 JSON；不联网、不登录、不读取或保存 Cookie、密码、Token，不上传正文/封面，不提交作品。公开展示前必须使用 `$wawa-source` 的脱敏视图。

@@ -8,6 +8,8 @@
 
 `wawa-submission` 与 `wawa-source` 仅为互操作说明而引用“蛙蛙写作”名称和公开投稿 URL。蛙蛙写作不是本项目的运行时依赖、许可方、赞助方或背书方。本仓库不分发其 Logo、截图、网页 HTML、协议原文、采集器、浏览器会话或私有平台素材；动态类目、标签、限制、签约提示及统计字段均以平台当前页面与条款为准。统计示例全部为虚构数据。
 
+`wawa-submission` 在 `references/wawa-categories.json` 和 `references/wawa-tags.json` 中仅保留用于离线字段校验的版本化文本数据与来源元数据：前者记录一次公开创建页资源提取的三级路径，后者记录用户确认的页面标签文字。两者都不是平台 API、授权证明、实时页面镜像或永久规则；仓库不包含标签来源截图，也不保留指向未分发截图的路径。页面最终确认优先，快照仅在用户明确要求时整体刷新。
+
 | 来源（URL） | 声明的许可证状态 | 采用的抽象方法 | 未复制/明确排除内容 |
 | --- | --- | --- | --- |
 | [Novel Control Station](https://github.com/jingtai123/Novel-Control-Station-Skill) | MIT；来源仓库含许可证文件 | 人物压力、章节结构、对话压力、去分析腔和真实性修订 | 未复制自动续写脚本；明确排除带 `--dangerously-bypass-approvals-and-sandbox` 的脚本及任何权限绕过行为 |

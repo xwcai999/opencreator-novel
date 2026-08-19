@@ -39,7 +39,7 @@ jobs:
           manifest_path = Path("plugins/novel-studio-skill/.codex-plugin/plugin.json")
           manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
           assert manifest.get("name") == "novel-studio-skill", "manifest.name must match the plugin folder"
-          assert manifest.get("version") == "0.4.0", "manifest.version must be 0.4.0"
+          assert manifest.get("version") == "0.5.0", "manifest.version must be 0.5.0"
           assert re.fullmatch(r"\d+\.\d+\.\d+", manifest.get("version", "")), "manifest.version must be strict semver"
           assert isinstance(manifest.get("description"), str) and manifest["description"], "manifest.description is required"
           assert isinstance(manifest.get("author"), dict) and manifest["author"].get("name"), "manifest.author.name is required"
@@ -68,6 +68,20 @@ jobs:
           entries = [entry for entry in marketplace.get("plugins", []) if entry.get("name") == "novel-studio-skill"]
           assert len(entries) == 1, "marketplace must contain exactly one novel-studio-skill selector"
           assert entries[0].get("source", {}).get("path") == "./plugins/novel-studio-skill", "marketplace source selector changed"
+
+          category_path = skills_root / "wawa-submission" / "references" / "wawa-categories.json"
+          tag_path = skills_root / "wawa-submission" / "references" / "wawa-tags.json"
+          categories = json.loads(category_path.read_text(encoding="utf-8"))
+          tags = json.loads(tag_path.read_text(encoding="utf-8"))
+          assert categories.get("type") == "wawa-category-snapshot"
+          assert categories.get("fixed") is True and categories.get("refresh_policy") == "explicit-only"
+          assert categories.get("path_count") == 350
+          assert isinstance(categories.get("categories"), list) and categories["categories"]
+          assert tags.get("type") == "wawa-tag-snapshot"
+          assert tags.get("fixed") is True and tags.get("refresh_policy") == "user-confirmed-only"
+          assert tags.get("count") == 158
+          assert isinstance(tags.get("tags"), list) and len(tags["tags"]) == 158 and len(set(tags["tags"])) == 158
+          assert "path" not in tags.get("source", {}), "tag snapshot must not retain a non-distributed screenshot path"
 
       - name: Check tracked caches and sensitive assets
         shell: python

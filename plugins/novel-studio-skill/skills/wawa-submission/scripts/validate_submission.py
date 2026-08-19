@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import importlib.util
 import json
 import os
@@ -38,6 +39,9 @@ ALLOWED_CHANNELS = {"男频", "女频", "全频"}
 ALLOWED_STATUSES = {"连载", "完结"}
 ALLOWED_MANUSCRIPT_EXTENSIONS = {".doc", ".docx", ".txt"}
 ALLOWED_COVER_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+REFERENCE_ROOT = Path(__file__).resolve().parents[1] / "references"
+DEFAULT_CATEGORY_SNAPSHOT = REFERENCE_ROOT / "wawa-categories.json"
+DEFAULT_TAG_SNAPSHOT = REFERENCE_ROOT / "wawa-tags.json"
 RULE_CACHE = {
     "public_signing_guidance": {
         "checked_at": "2026-08-12",
@@ -494,6 +498,147 @@ def _normalise_categories(data: Mapping[str, Any]) -> list[str]:
     return result
 
 
+def _normalise_tags(value: Any) -> list[str]:
+    return _as_items(value)
+
+
+def _load_snapshot(
+    value: str | Path | None,
+    default_path: Path,
+    *,
+    label: str,
+    base_dir: Path | None,
+) -> tuple[Mapping[str, Any] | None, dict[str, Any], str | None]:
+    """加载固定分类/标签快照，显式路径仍遵循 base_dir 边界。"""
+
+    try:
+        if value is None:
+            path = default_path.resolve(strict=False)
+            display = f"references/{path.name}"
+            bundled = True
+        else:
+            path = _resolve_path(value, base_dir)
+            if path is None:
+                raise PathSafetyError("路径为空")
+            display = _display_path(path, base_dir)
+            bundled = False
+        raw = path.read_bytes()
+        payload = json.loads(raw.decode("utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError, PathSafetyError) as exc:
+        return None, {"loaded": False, "path": None}, f"无法读取{label}快照: {exc}"
+    if not isinstance(payload, Mapping):
+        return None, {"loaded": False, "path": display}, f"{label}快照格式无效：根节点须为对象"
+    return payload, {
+        "loaded": True,
+        "path": display,
+        "bundled": bundled,
+        "schema_version": payload.get("schema_version"),
+        "sha256": hashlib.sha256(raw).hexdigest(),
+    }, None
+
+
+def _snapshot_node_name(node: Any) -> str:
+    if not isinstance(node, Mapping):
+        return ""
+    return _clean_text(node.get("label") if node.get("label") is not None else node.get("value"))
+
+
+def _load_category_snapshot(
+    value: str | Path | None,
+    *,
+    base_dir: Path | None,
+) -> tuple[set[tuple[str, str, str]] | None, dict[str, Any], str | None]:
+    payload, info, error = _load_snapshot(
+        value, DEFAULT_CATEGORY_SNAPSHOT, label="作品分类", base_dir=base_dir
+    )
+    if error or payload is None:
+        return None, info, error
+    if (
+        payload.get("schema_version") != 1
+        or payload.get("type") != "wawa-category-snapshot"
+        or payload.get("fixed") is not True
+        or payload.get("refresh_policy") != "explicit-only"
+    ):
+        return None, info, "作品分类快照格式无效：固定快照元数据不匹配"
+    roots = payload.get("categories")
+    if not isinstance(roots, list):
+        return None, info, "作品分类快照格式无效：缺少 categories 数组"
+
+    paths: set[tuple[str, str, str]] = set()
+    invalid = False
+    for root in roots:
+        root_name = _snapshot_node_name(root)
+        middle_nodes = root.get("children") if isinstance(root, Mapping) else None
+        if not root_name or not isinstance(middle_nodes, list):
+            invalid = True
+            continue
+        for middle in middle_nodes:
+            middle_name = _snapshot_node_name(middle)
+            leaf_nodes = middle.get("children") if isinstance(middle, Mapping) else None
+            if not middle_name or not isinstance(leaf_nodes, list):
+                invalid = True
+                continue
+            for leaf in leaf_nodes:
+                leaf_name = _snapshot_node_name(leaf)
+                if not leaf_name:
+                    invalid = True
+                    continue
+                category_path = (root_name, middle_name, leaf_name)
+                if category_path in paths:
+                    return None, info, "作品分类快照格式无效：存在重复完整三级路径"
+                paths.add(category_path)
+    declared_count = _int_value(payload.get("path_count"))
+    if invalid or not paths:
+        return None, info, "作品分类快照格式无效：须包含完整三级分类树"
+    if payload.get("path_count") is not None and declared_count != len(paths):
+        return None, info, "作品分类快照格式无效：path_count 与实际三级路径数量不一致"
+    source = payload.get("source")
+    if not isinstance(source, Mapping):
+        source = {
+            "url": payload.get("source_url"),
+            "asset_url": payload.get("source_asset_url"),
+            "asset_sha256": payload.get("source_asset_sha256"),
+            "fetched_at": payload.get("fetched_at"),
+        }
+    info.update({
+        "path_count": len(paths),
+        "roots": sorted({item[0] for item in paths}),
+        "source": {key: value for key, value in source.items() if value not in (None, "")},
+    })
+    return paths, info, None
+
+
+def _load_tag_snapshot(
+    value: str | Path | None,
+    *,
+    base_dir: Path | None,
+) -> tuple[set[str] | None, dict[str, Any], str | None]:
+    payload, info, error = _load_snapshot(value, DEFAULT_TAG_SNAPSHOT, label="作品标签", base_dir=base_dir)
+    if error or payload is None:
+        return None, info, error
+    if (
+        payload.get("schema_version") != 1
+        or payload.get("type") != "wawa-tag-snapshot"
+        or payload.get("fixed") is not True
+        or payload.get("refresh_policy") != "user-confirmed-only"
+    ):
+        return None, info, "作品标签快照格式无效：固定快照元数据不匹配"
+    raw_tags = payload.get("tags")
+    if not isinstance(raw_tags, list):
+        return None, info, "作品标签快照格式无效：缺少 tags 数组"
+    normalised_tags = [_clean_text(item) for item in raw_tags if _clean_text(item)]
+    tags = set(normalised_tags)
+    declared_count = _int_value(payload.get("count"))
+    if not tags:
+        return None, info, "作品标签快照格式无效：tags 数组不能为空"
+    if len(tags) != len(normalised_tags):
+        return None, info, "作品标签快照格式无效：存在重复标签"
+    if payload.get("count") is not None and declared_count != len(tags):
+        return None, info, "作品标签快照格式无效：count 与实际标签数量不一致"
+    info.update({"tag_count": len(tags), "source": payload.get("source")})
+    return tags, info, None
+
+
 def _validate_history_images(value: Any, base_dir: Path | None, errors: list[str]) -> list[dict[str, Any]]:
     if value in (None, "", []):
         return []
@@ -617,6 +762,8 @@ def validate_submission(
     snapshot: Mapping[str, Any] | str | Path | None = None,
     snapshot_path: str | Path | None = None,
     snapshot_now: dt.datetime | str | None = None,
+    category_snapshot: str | Path | None = None,
+    tag_snapshot: str | Path | None = None,
 ) -> dict[str, Any]:
     """校验独立稿件或 Novel Studio 集成项目。"""
 
@@ -640,8 +787,25 @@ def validate_submission(
     channel = _normalise_channel(_lookup(metadata, FIELD_ALIASES["channel"]))
     status = _normalise_status(_lookup(metadata, FIELD_ALIASES["status"]))
     categories = _normalise_categories(metadata)
-    tags = _as_items(_lookup(metadata, FIELD_ALIASES["tags"]))
+    tags = _normalise_tags(_lookup(metadata, FIELD_ALIASES["tags"]))
     custom_tags = _as_items(_lookup(metadata, FIELD_ALIASES["custom_tags"]))
+    category_paths, category_snapshot_info, category_snapshot_error = _load_category_snapshot(
+        category_snapshot, base_dir=root
+    )
+    tag_values, tag_snapshot_info, tag_snapshot_error = _load_tag_snapshot(tag_snapshot, base_dir=root)
+    if category_snapshot_error:
+        category_snapshot_info["error"] = category_snapshot_error
+        errors.append(category_snapshot_error)
+    if tag_snapshot_error:
+        tag_snapshot_info["error"] = tag_snapshot_error
+        errors.append(tag_snapshot_error)
+    category_taxonomy: dict[str, Any] = {
+        "provided": categories,
+        "valid": None,
+        "matched_path": None,
+        "channel_root_valid": None,
+    }
+    tag_taxonomy: dict[str, Any] = {"provided": tags, "valid": None, "unknown": []}
     if not title: blockers.append("作品名称不能为空")
     elif len(title) > MAX_TITLE_LENGTH: errors.append(f"作品名称长度不能超过 {MAX_TITLE_LENGTH} 字符")
     if not pen_name: blockers.append("笔名不能为空")
@@ -653,8 +817,27 @@ def validate_submission(
     if not status: blockers.append("作品状态尚未确认，须按事实选择连载或完结")
     elif status not in ALLOWED_STATUSES: errors.append(f"状态必须为连载或完结，当前为 {status}")
     if not categories: blockers.append("后台三级类目尚未确认，须从当前页面选择 3 项")
-    elif len(categories) != 3: errors.append(f"三级类目必须恰好填写 3 项，当前为 {len(categories)} 项")
+    elif len(categories) != 3 or any(not item for item in categories):
+        errors.append(f"三级类目必须恰好填写 3 项，当前为 {len(categories)} 项")
+    elif category_paths is not None:
+        category_path = (categories[0], categories[1], categories[2])
+        category_taxonomy["matched_path"] = list(category_path)
+        category_taxonomy["valid"] = category_path in category_paths
+        if category_path not in category_paths:
+            errors.append("三级类目不在固定作品分类快照中，须精确填写完整三级路径")
+        if channel in {"男频", "女频"}:
+            category_taxonomy["channel_root_valid"] = category_path[0] == channel
+            if category_path[0] != channel:
+                errors.append(f"{channel}频道只能选择以“{channel}”为根的三级类目")
+        elif channel == "全频":
+            category_taxonomy["channel_root_valid"] = category_path[0] in {item[0] for item in category_paths}
     if not tags: blockers.append("至少填写 1 个标签")
+    elif tag_values is not None:
+        unknown_tags = [tag for tag in tags if tag not in tag_values]
+        tag_taxonomy["unknown"] = unknown_tags
+        tag_taxonomy["valid"] = not unknown_tags
+        if unknown_tags:
+            errors.append("作品标签不在固定标签库中: " + "、".join(unknown_tags))
     for tag in custom_tags:
         if len(tag) > MAX_CUSTOM_TAG_LENGTH: errors.append(f"自定义标签“{tag}”长度不能超过 {MAX_CUSTOM_TAG_LENGTH} 字符")
 
@@ -732,6 +915,13 @@ def validate_submission(
             "actual_message": None,
         },
         "wawa_snapshot": snapshot_info,
+        "taxonomy": {
+            "policy": "strict-v1",
+            "category_snapshot": category_snapshot_info,
+            "tag_snapshot": tag_snapshot_info,
+            "categories": category_taxonomy,
+            "tags": tag_taxonomy,
+        },
     }
     if project_info is not None: result["project"] = project_info
     return result
@@ -760,6 +950,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--manuscript", help="可选投稿稿件（.doc/.docx/.txt）")
     parser.add_argument("--snapshot", "--snapshot-path", dest="snapshot_path", help="可选本地蛙蛙统计快照 JSON；只读、过期即标记")
     parser.add_argument("--snapshot-now", help="可选快照 TTL 判断时间（带时区），主要用于离线测试")
+    parser.add_argument("--category-snapshot", help="可选作品分类快照 JSON，默认使用内置固定快照")
+    parser.add_argument("--tag-snapshot", help="可选作品标签快照 JSON，默认使用内置固定快照")
     parser.add_argument("--json", action="store_true", help="以 JSON 输出结果")
     return parser
 
@@ -776,6 +968,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             base_dir=metadata_path.parent,
             snapshot_path=args.snapshot_path,
             snapshot_now=args.snapshot_now,
+            category_snapshot=args.category_snapshot,
+            tag_snapshot=args.tag_snapshot,
         )
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
         result = {"ok": False, "mode": "independent", "errors": [f"无法读取元数据: {exc}"], "blockers": [], "warnings": []}

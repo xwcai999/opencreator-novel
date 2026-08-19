@@ -41,8 +41,8 @@ class WawaSubmissionTests(unittest.TestCase):
             "summary": "用于离线预检的正式简介。",
             "channel": "男频",
             "status": "连载",
-            "categories": ["一级", "二级", "三级"],
-            "tags": ["成长"],
+            "categories": ["男频", "游戏竞技", "虚拟网游"],
+            "tags": ["爽文"],
             "cover": "cover.png",
         }
         value.update(updates)
@@ -207,6 +207,53 @@ class WawaSubmissionTests(unittest.TestCase):
         expected_status = result["rules"]["historical_form_observation"]["verification_status"]
         self.assertIn(expected_status, warnings)
         self.assertNotIn("签约口径为 2 万字", json.dumps(result, ensure_ascii=False))
+
+    def test_bundled_taxonomy_accepts_exact_path_and_tag(self) -> None:
+        result = self.validate(manuscript="book.txt")
+        self.assertTrue(result["ok"], result)
+        taxonomy = result["taxonomy"]
+        self.assertEqual(taxonomy["category_snapshot"]["path_count"], 350)
+        self.assertEqual(taxonomy["tag_snapshot"]["tag_count"], 158)
+        self.assertTrue(taxonomy["categories"]["valid"])
+        self.assertTrue(taxonomy["categories"]["channel_root_valid"])
+        self.assertTrue(taxonomy["tags"]["valid"])
+        self.assertNotIn("path", taxonomy["tag_snapshot"]["source"])
+
+    def test_taxonomy_rejects_unknown_category_and_tag(self) -> None:
+        result = self.validate(
+            self.metadata(categories=["男频", "游戏竞技", "不存在的分类"], tags=["不存在的标签"]),
+            manuscript="book.txt",
+        )
+        self.assertFalse(result["ok"])
+        errors = "\n".join(result["errors"])
+        self.assertIn("三级类目不在固定作品分类快照中", errors)
+        self.assertIn("作品标签不在固定标签库中", errors)
+
+    def test_taxonomy_rejects_channel_root_mismatch(self) -> None:
+        result = self.validate(
+            self.metadata(channel="女频", categories=["男频", "游戏竞技", "虚拟网游"]),
+            manuscript="book.txt",
+        )
+        self.assertFalse(result["ok"])
+        self.assertIn("女频频道只能选择以“女频”为根", "\n".join(result["errors"]))
+
+    def test_custom_snapshot_requires_fixed_contract_metadata(self) -> None:
+        category_snapshot = self.root / "category-snapshot.json"
+        category_snapshot.write_text(
+            json.dumps({"categories": []}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        result = self.validate(manuscript="book.txt", category_snapshot="category-snapshot.json")
+        self.assertFalse(result["ok"])
+        self.assertIn("固定快照元数据不匹配", "\n".join(result["errors"]))
+
+    def test_taxonomy_output_identifies_strict_migration_contract(self) -> None:
+        result = self.validate(manuscript="book.txt")
+        self.assertEqual(result["taxonomy"]["policy"], "strict-v1")
+        self.assertEqual(
+            result["taxonomy"]["category_snapshot"]["source"]["url"],
+            "https://wawawriter.com/app/submission/create",
+        )
 
 
 if __name__ == "__main__":
