@@ -1,7 +1,7 @@
 {
   "name": "novel-studio-skill",
-  "version": "0.4.0",
-  "description": "OpenCreator's auditable Chinese-fiction workflow with optional, unofficial offline Wawa submission and statistics adapters.",
+  "version": "0.5.0",
+  "description": "OpenCreator's auditable Chinese-fiction workflow with optional, unofficial offline Wawa submission, versioned category/tag snapshots, and statistics adapters.",
   "author": {
     "name": "xwcai999",
     "url": "https://github.com/xwcai999"

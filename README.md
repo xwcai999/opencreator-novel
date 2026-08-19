@@ -12,7 +12,7 @@ OpenCreator Novel is the fiction member of the [OpenCreator](https://github.com/
 - **Review and revision:** deterministic project validation, chapter acceptance evidence, reader/style review, stage review, prose-trend evidence, and conservative authenticity-revision candidates. Reports never overwrite manuscript facts.
 - **Migration and delivery:** safe migration from an older `novel-planner` project, isolated derived output, publication-readiness pilots, blind full-text checks, and submission-oriented packaging guidance.
 - **Covers:** an optional `$codex-gpt-image` workflow can generate the complete cover and title in one model-native image. The skill does not read or store OAuth credentials; the legacy local title-overlay script is not the current cover path.
-- **Wawa submission adapter (unofficial):** prepares a material sheet and performs local file/metadata checks. Integrated mode reuses Novel Studio evidence; standalone mode needs only metadata plus a manuscript. It never logs in, uploads, accepts agreements, or submits.
+- **Wawa submission adapter (unofficial):** prepares a material sheet and performs local file/metadata checks. Integrated mode reuses Novel Studio evidence; standalone mode needs only metadata plus a manuscript. It includes versioned offline category and tag snapshots for deterministic pre-checks, while the current page remains final. It never logs in, uploads, accepts agreements, or submits.
 - **Wawa statistics source (unofficial):** validates local `wawa.stats.v1` JSON, enforces freshness metadata, removes work/account identifiers, and produces aggregate or Dashboard-ready JSON. It never opens Wawa, logs in, scrapes pages, or collects live data.
 
 The included Python tools are small, deterministic command-line utilities. The model-orchestration rules live in [`plugins/novel-studio-skill/skills/novel-studio/SKILL.md`](plugins/novel-studio-skill/skills/novel-studio/SKILL.md) and its directly linked references.
@@ -29,7 +29,7 @@ See the bilingual [Privacy Policy](PRIVACY.md), [Terms of Use](TERMS.md), and [S
 
 ### Codex plugin installation
 
-1. Add this repository as a pinned marketplace: `codex plugin marketplace add xwcai999/opencreator-novel --ref v0.4.0`.
+1. Add this repository as a pinned marketplace: `codex plugin marketplace add xwcai999/opencreator-novel --ref v0.5.0`.
 2. Install the plugin: `codex plugin add novel-studio-skill@novel-studio-community`.
 3. Start a new Codex session so the plugin registry reloads.
 4. Invoke `$novel-studio` for fiction work, `$wawa-submission` for material preparation, or `$wawa-source` for offline statistics snapshots.
@@ -47,7 +47,9 @@ cd path/to/wawa-submission
 python scripts/validate_submission.py --metadata path/to/metadata.json --manuscript path/to/manuscript.txt --json
 ```
 
-The adapter is not affiliated with or endorsed by Wawa Writer. Its local result is not proof of upload acceptance, review approval, or signing. The current public submission page says long-form works reach formal signing at 100,000 Chinese characters and currently does not accept short works; older 20,000/30,000-character form observations are retained only as stale risk notes. Always re-check the current page before submission.
+The adapter is not affiliated with or endorsed by Wawa Writer. Its local result is not proof of upload acceptance, review approval, or signing. `wawa-categories.json` provides 350 fixed three-level paths and `wawa-tags.json` provides 158 fixed tag candidates for offline validation; they are versioned references, not a Wawa API or permanent platform rules. The current public submission page says long-form works reach formal signing at 100,000 Chinese characters; older 20,000/30,000-character form observations are retained only as stale risk notes. These figures must not be combined into a signing guarantee. Always re-check the current page before submission.
+
+When upgrading from `v0.4.x`, `categories` must now exactly match a fixed three-level path and `tags` contains only fixed platform tags. Move author-defined tags to `custom_tags` and confirm them on the current page. Legacy values outside the snapshots fail closed instead of being silently replaced with similar terms.
 
 To use only the statistics source, copy `plugins/novel-studio-skill/skills/wawa-source/`. Supply a local snapshot exported or prepared by the user; the public project intentionally contains no authenticated collector.
 

@@ -1,0 +1,1770 @@
+{
+  "schema_version": 1,
+  "type": "wawa-category-snapshot",
+  "fixed": true,
+  "refresh_policy": "explicit-only",
+  "source_url": "https://wawawriter.com/app/submission/create",
+  "source_asset_url": "https://wawawriter.com/app/assets/CreateSubmission.CD6Gp4cQ.js",
+  "source_asset_sha256": "5362d5a98d45396defc2874d1a30788b81a91473c1635c97eb9f04555fa846a5",
+  "fetched_at": "2026-08-19T12:53:19+08:00",
+  "submission_type": "长篇",
+  "path_count": 350,
+  "counts_by_root": [
+    {
+      "root": "男频",
+      "path_count": 133
+    },
+    {
+      "root": "女频",
+      "path_count": 95
+    },
+    {
+      "root": "出版",
+      "path_count": 122
+    }
+  ],
+  "categories": [
+    {
+      "value": "男频",
+      "label": "男频",
+      "children": [
+        {
+          "value": "游戏竞技",
+          "label": "游戏竞技",
+          "children": [
+            {
+              "value": "虚拟网游",
+              "label": "虚拟网游"
+            },
+            {
+              "value": "篮球风云",
+              "label": "篮球风云"
+            },
+            {
+              "value": "游戏异界",
+              "label": "游戏异界"
+            },
+            {
+              "value": "游戏系统",
+              "label": "游戏系统"
+            },
+            {
+              "value": "足球运动",
+              "label": "足球运动"
+            },
+            {
+              "value": "电子竞技",
+              "label": "电子竞技"
+            },
+            {
+              "value": "游戏主播",
+              "label": "游戏主播"
+            },
+            {
+              "value": "游戏生涯",
+              "label": "游戏生涯"
+            },
+            {
+              "value": "棋牌桌游",
+              "label": "棋牌桌游"
+            },
+            {
+              "value": "体育竞技",
+              "label": "体育竞技"
+            },
+            {
+              "value": "天下足球",
+              "label": "天下足球"
+            }
+          ]
+        },
+        {
+          "value": "历史军事",
+          "label": "历史军事",
+          "children": [
+            {
+              "value": "架空历史",
+              "label": "架空历史"
+            },
+            {
+              "value": "上古先秦",
+              "label": "上古先秦"
+            },
+            {
+              "value": "两晋隋唐",
+              "label": "两晋隋唐"
+            },
+            {
+              "value": "历史穿越",
+              "label": "历史穿越"
+            },
+            {
+              "value": "两宋元明",
+              "label": "两宋元明"
+            },
+            {
+              "value": "秦汉三国",
+              "label": "秦汉三国"
+            },
+            {
+              "value": "抗战烽火",
+              "label": "抗战烽火"
+            },
+            {
+              "value": "谍战特工",
+              "label": "谍战特工"
+            },
+            {
+              "value": "外国历史",
+              "label": "外国历史"
+            },
+            {
+              "value": "军旅生涯",
+              "label": "军旅生涯"
+            },
+            {
+              "value": "军事战争",
+              "label": "军事战争"
+            },
+            {
+              "value": "清史民国",
+              "label": "清史民国"
+            },
+            {
+              "value": "其他",
+              "label": "其他"
+            },
+            {
+              "value": "历史传奇",
+              "label": "历史传奇"
+            },
+            {
+              "value": "五代十国",
+              "label": "五代十国"
+            },
+            {
+              "value": "战争幻想",
+              "label": "战争幻想"
+            },
+            {
+              "value": "战史风云",
+              "label": "战史风云"
+            },
+            {
+              "value": "历史脑洞",
+              "label": "历史脑洞"
+            },
+            {
+              "value": "近代抗战",
+              "label": "近代抗战"
+            }
+          ]
+        },
+        {
+          "value": "仙侠武侠",
+          "label": "仙侠武侠",
+          "children": [
+            {
+              "value": "奇幻修真",
+              "label": "奇幻修真"
+            },
+            {
+              "value": "神话修真",
+              "label": "神话修真"
+            },
+            {
+              "value": "武侠幻想",
+              "label": "武侠幻想"
+            },
+            {
+              "value": "现代修真",
+              "label": "现代修真"
+            },
+            {
+              "value": "修真文明",
+              "label": "修真文明"
+            },
+            {
+              "value": "古典仙侠",
+              "label": "古典仙侠"
+            },
+            {
+              "value": "国术古武",
+              "label": "国术古武"
+            },
+            {
+              "value": "武侠同人",
+              "label": "武侠同人"
+            },
+            {
+              "value": "传统武侠",
+              "label": "传统武侠"
+            },
+            {
+              "value": "历史武侠",
+              "label": "历史武侠"
+            },
+            {
+              "value": "洪荒封神",
+              "label": "洪荒封神"
+            },
+            {
+              "value": "现代异侠",
+              "label": "现代异侠"
+            },
+            {
+              "value": "武侠仙侠",
+              "label": "武侠仙侠"
+            },
+            {
+              "value": "玄幻脑洞",
+              "label": "玄幻脑洞"
+            },
+            {
+              "value": "玄幻奇幻",
+              "label": "玄幻奇幻"
+            }
+          ]
+        },
+        {
+          "value": "科幻末世",
+          "label": "科幻末世",
+          "children": [
+            {
+              "value": "末世危机",
+              "label": "末世危机"
+            },
+            {
+              "value": "进化变异",
+              "label": "进化变异"
+            },
+            {
+              "value": "星际机甲",
+              "label": "星际机甲"
+            },
+            {
+              "value": "时空穿梭",
+              "label": "时空穿梭"
+            },
+            {
+              "value": "未来幻想",
+              "label": "未来幻想"
+            },
+            {
+              "value": "超级科技",
+              "label": "超级科技"
+            },
+            {
+              "value": "星际战争",
+              "label": "星际战争"
+            },
+            {
+              "value": "古武机甲",
+              "label": "古武机甲"
+            },
+            {
+              "value": "科幻脑洞",
+              "label": "科幻脑洞"
+            }
+          ]
+        },
+        {
+          "value": "二次元",
+          "label": "二次元",
+          "children": [
+            {
+              "value": "影视同人",
+              "label": "影视同人"
+            },
+            {
+              "value": "宅系小说",
+              "label": "宅系小说"
+            },
+            {
+              "value": "女生同人",
+              "label": "女生同人"
+            },
+            {
+              "value": "萌系小说",
+              "label": "萌系小说"
+            },
+            {
+              "value": "武侠同人",
+              "label": "武侠同人"
+            },
+            {
+              "value": "动漫同人",
+              "label": "动漫同人"
+            },
+            {
+              "value": "游戏同人",
+              "label": "游戏同人"
+            },
+            {
+              "value": "灵魂转换",
+              "label": "灵魂转换"
+            },
+            {
+              "value": "授权同人",
+              "label": "授权同人"
+            }
+          ]
+        },
+        {
+          "value": "玄幻奇幻",
+          "label": "玄幻奇幻",
+          "children": [
+            {
+              "value": "东方玄幻",
+              "label": "东方玄幻"
+            },
+            {
+              "value": "异界大陆",
+              "label": "异界大陆"
+            },
+            {
+              "value": "高武世界",
+              "label": "高武世界"
+            },
+            {
+              "value": "异世争霸",
+              "label": "异世争霸"
+            },
+            {
+              "value": "神秘幻想",
+              "label": "神秘幻想"
+            },
+            {
+              "value": "魔法校园",
+              "label": "魔法校园"
+            },
+            {
+              "value": "西方奇幻",
+              "label": "西方奇幻"
+            },
+            {
+              "value": "另类幻想",
+              "label": "另类幻想"
+            },
+            {
+              "value": "史诗奇幻",
+              "label": "史诗奇幻"
+            },
+            {
+              "value": "异术超能",
+              "label": "异术超能"
+            },
+            {
+              "value": "领主贵族",
+              "label": "领主贵族"
+            },
+            {
+              "value": "热血豪情",
+              "label": "热血豪情"
+            }
+          ]
+        },
+        {
+          "value": "悬疑小说",
+          "label": "悬疑小说",
+          "children": [
+            {
+              "value": "探险揭秘",
+              "label": "探险揭秘"
+            },
+            {
+              "value": "诡秘悬疑",
+              "label": "诡秘悬疑"
+            },
+            {
+              "value": "恐怖悬疑",
+              "label": "恐怖悬疑"
+            },
+            {
+              "value": "侦探推理",
+              "label": "侦探推理"
+            },
+            {
+              "value": "悬疑脑洞",
+              "label": "悬疑脑洞"
+            },
+            {
+              "value": "奇妙世界",
+              "label": "奇妙世界"
+            },
+            {
+              "value": "恐怖未知",
+              "label": "恐怖未知"
+            },
+            {
+              "value": "灵异奇谈",
+              "label": "灵异奇谈"
+            },
+            {
+              "value": "古今传奇",
+              "label": "古今传奇"
+            }
+          ]
+        },
+        {
+          "value": "自述小说",
+          "label": "自述小说",
+          "children": [
+            {
+              "value": "现实经历",
+              "label": "现实经历"
+            },
+            {
+              "value": "臆想世界",
+              "label": "臆想世界"
+            },
+            {
+              "value": "另类视角",
+              "label": "另类视角"
+            }
+          ]
+        },
+        {
+          "value": "爆笑小说",
+          "label": "爆笑小说",
+          "children": [
+            {
+              "value": "现实爆笑",
+              "label": "现实爆笑"
+            },
+            {
+              "value": "冷幽默",
+              "label": "冷幽默"
+            },
+            {
+              "value": "幻想爆笑",
+              "label": "幻想爆笑"
+            }
+          ]
+        },
+        {
+          "value": "都市小说",
+          "label": "都市小说",
+          "children": [
+            {
+              "value": "都市异能",
+              "label": "都市异能"
+            },
+            {
+              "value": "官场风云",
+              "label": "官场风云"
+            },
+            {
+              "value": "乡村乡土",
+              "label": "乡村乡土"
+            },
+            {
+              "value": "都市生活",
+              "label": "都市生活"
+            },
+            {
+              "value": "娱乐明星",
+              "label": "娱乐明星"
+            },
+            {
+              "value": "异术超能",
+              "label": "异术超能"
+            },
+            {
+              "value": "都市修仙",
+              "label": "都市修仙"
+            },
+            {
+              "value": "都市高手",
+              "label": "都市高手"
+            },
+            {
+              "value": "商业大亨",
+              "label": "商业大亨"
+            },
+            {
+              "value": "校园风云",
+              "label": "校园风云"
+            },
+            {
+              "value": "都市脑洞",
+              "label": "都市脑洞"
+            },
+            {
+              "value": "都市重生",
+              "label": "都市重生"
+            },
+            {
+              "value": "热血青春",
+              "label": "热血青春"
+            },
+            {
+              "value": "职场励志",
+              "label": "职场励志"
+            },
+            {
+              "value": "都市激战",
+              "label": "都市激战"
+            },
+            {
+              "value": "战神赘婿",
+              "label": "战神赘婿"
+            },
+            {
+              "value": "枭雄权谋",
+              "label": "枭雄权谋"
+            },
+            {
+              "value": "医道圣手",
+              "label": "医道圣手"
+            }
+          ]
+        },
+        {
+          "value": "轻小说",
+          "label": "轻小说",
+          "children": [
+            {
+              "value": "衍生同人",
+              "label": "衍生同人"
+            },
+            {
+              "value": "原生幻想",
+              "label": "原生幻想"
+            },
+            {
+              "value": "恋爱日常",
+              "label": "恋爱日常"
+            },
+            {
+              "value": "二次元",
+              "label": "二次元"
+            }
+          ]
+        },
+        {
+          "value": "诸天无限",
+          "label": "诸天无限",
+          "children": [
+            {
+              "value": "诸天无限",
+              "label": "诸天无限"
+            },
+            {
+              "value": "综漫",
+              "label": "综漫"
+            }
+          ]
+        },
+        {
+          "value": "现实主义",
+          "label": "现实主义",
+          "children": [
+            {
+              "value": "人间百态",
+              "label": "人间百态"
+            },
+            {
+              "value": "时代叙事",
+              "label": "时代叙事"
+            }
+          ]
+        },
+        {
+          "value": "短篇故事",
+          "label": "短篇故事",
+          "children": [
+            {
+              "value": "现实百态",
+              "label": "现实百态"
+            },
+            {
+              "value": "婚恋爱情",
+              "label": "婚恋爱情"
+            },
+            {
+              "value": "灵异奇谈",
+              "label": "灵异奇谈"
+            },
+            {
+              "value": "短篇其他",
+              "label": "短篇其他"
+            },
+            {
+              "value": "悬疑探案",
+              "label": "悬疑探案"
+            },
+            {
+              "value": "文学散文",
+              "label": "文学散文"
+            },
+            {
+              "value": "小说随笔",
+              "label": "小说随笔"
+            }
+          ]
+        },
+        {
+          "value": "婚恋情感",
+          "label": "婚恋情感",
+          "children": [
+            {
+              "value": "婚恋爱情",
+              "label": "婚恋爱情"
+            }
+          ]
+        },
+        {
+          "value": "奇闻异事",
+          "label": "奇闻异事",
+          "children": [
+            {
+              "value": "神秘怪谈",
+              "label": "神秘怪谈"
+            },
+            {
+              "value": "奇门秘术",
+              "label": "奇门秘术"
+            }
+          ]
+        },
+        {
+          "value": "灵异悬疑",
+          "label": "灵异悬疑",
+          "children": [
+            {
+              "value": "都市怪谈",
+              "label": "都市怪谈"
+            },
+            {
+              "value": "悬疑探险",
+              "label": "悬疑探险"
+            },
+            {
+              "value": "恐怖惊悚",
+              "label": "恐怖惊悚"
+            },
+            {
+              "value": "推理侦探",
+              "label": "推理侦探"
+            },
+            {
+              "value": "古今传奇",
+              "label": "古今传奇"
+            }
+          ]
+        },
+        {
+          "value": "同人小说",
+          "label": "同人小说",
+          "children": [
+            {
+              "value": "动漫同人",
+              "label": "动漫同人"
+            },
+            {
+              "value": "武侠同人",
+              "label": "武侠同人"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "value": "女频",
+      "label": "女频",
+      "children": [
+        {
+          "value": "浪漫青春",
+          "label": "浪漫青春",
+          "children": [
+            {
+              "value": "青春校园",
+              "label": "青春校园"
+            },
+            {
+              "value": "青春纯爱",
+              "label": "青春纯爱"
+            },
+            {
+              "value": "叛逆成长",
+              "label": "叛逆成长"
+            },
+            {
+              "value": "百合之恋",
+              "label": "百合之恋"
+            },
+            {
+              "value": "网配快穿",
+              "label": "网配快穿"
+            }
+          ]
+        },
+        {
+          "value": "情感小说",
+          "label": "情感小说",
+          "children": [
+            {
+              "value": "家庭伦理",
+              "label": "家庭伦理"
+            },
+            {
+              "value": "婚恋情感",
+              "label": "婚恋情感"
+            },
+            {
+              "value": "婆媳关系",
+              "label": "婆媳关系"
+            }
+          ]
+        },
+        {
+          "value": "青春小说",
+          "label": "青春小说",
+          "children": [
+            {
+              "value": "校园青春",
+              "label": "校园青春"
+            },
+            {
+              "value": "悲伤青春",
+              "label": "悲伤青春"
+            },
+            {
+              "value": "纯爱青春",
+              "label": "纯爱青春"
+            }
+          ]
+        },
+        {
+          "value": "都市言情",
+          "label": "都市言情",
+          "children": [
+            {
+              "value": "都市异能",
+              "label": "都市异能"
+            },
+            {
+              "value": "总裁豪门",
+              "label": "总裁豪门"
+            },
+            {
+              "value": "婚恋爱情",
+              "label": "婚恋爱情"
+            },
+            {
+              "value": "娱乐明星",
+              "label": "娱乐明星"
+            },
+            {
+              "value": "都市情缘",
+              "label": "都市情缘"
+            },
+            {
+              "value": "年代重生",
+              "label": "年代重生"
+            },
+            {
+              "value": "职场丽人",
+              "label": "职场丽人"
+            },
+            {
+              "value": "青青校园",
+              "label": "青青校园"
+            },
+            {
+              "value": "跨国情缘",
+              "label": "跨国情缘"
+            },
+            {
+              "value": "民国旧影",
+              "label": "民国旧影"
+            },
+            {
+              "value": "古典架空",
+              "label": "古典架空"
+            },
+            {
+              "value": "游戏情缘",
+              "label": "游戏情缘"
+            },
+            {
+              "value": "现代重生",
+              "label": "现代重生"
+            },
+            {
+              "value": "现言脑洞",
+              "label": "现言脑洞"
+            }
+          ]
+        },
+        {
+          "value": "古装言情",
+          "label": "古装言情",
+          "children": [
+            {
+              "value": "权谋天下",
+              "label": "权谋天下"
+            },
+            {
+              "value": "古典架空",
+              "label": "古典架空"
+            },
+            {
+              "value": "穿越时空",
+              "label": "穿越时空"
+            },
+            {
+              "value": "古代情缘",
+              "label": "古代情缘"
+            },
+            {
+              "value": "经商种田",
+              "label": "经商种田"
+            },
+            {
+              "value": "宫廷贵族",
+              "label": "宫廷贵族"
+            },
+            {
+              "value": "宫斗宅斗",
+              "label": "宫斗宅斗"
+            },
+            {
+              "value": "古代重生",
+              "label": "古代重生"
+            },
+            {
+              "value": "清穿民国",
+              "label": "清穿民国"
+            },
+            {
+              "value": "远古大陆",
+              "label": "远古大陆"
+            },
+            {
+              "value": "女尊王朝",
+              "label": "女尊王朝"
+            },
+            {
+              "value": "快意江湖",
+              "label": "快意江湖"
+            },
+            {
+              "value": "都市情感",
+              "label": "都市情感"
+            },
+            {
+              "value": "上古蛮荒",
+              "label": "上古蛮荒"
+            },
+            {
+              "value": "前世今生",
+              "label": "前世今生"
+            },
+            {
+              "value": "豪宅恩怨",
+              "label": "豪宅恩怨"
+            },
+            {
+              "value": "重生复仇",
+              "label": "重生复仇"
+            },
+            {
+              "value": "架空历史",
+              "label": "架空历史"
+            },
+            {
+              "value": "古色古香",
+              "label": "古色古香"
+            }
+          ]
+        },
+        {
+          "value": "幻想言情",
+          "label": "幻想言情",
+          "children": [
+            {
+              "value": "东方玄幻",
+              "label": "东方玄幻"
+            },
+            {
+              "value": "玄幻仙侠",
+              "label": "玄幻仙侠"
+            },
+            {
+              "value": "无限快穿",
+              "label": "无限快穿"
+            },
+            {
+              "value": "异世大陆",
+              "label": "异世大陆"
+            },
+            {
+              "value": "异能超术",
+              "label": "异能超术"
+            },
+            {
+              "value": "末世危机",
+              "label": "末世危机"
+            },
+            {
+              "value": "远古神话",
+              "label": "远古神话"
+            },
+            {
+              "value": "异能空间",
+              "label": "异能空间"
+            },
+            {
+              "value": "唯美纯爱",
+              "label": "唯美纯爱"
+            },
+            {
+              "value": "灵异悬疑",
+              "label": "灵异悬疑"
+            },
+            {
+              "value": "异界魔法",
+              "label": "异界魔法"
+            },
+            {
+              "value": "星际科幻",
+              "label": "星际科幻"
+            },
+            {
+              "value": "玄幻言情",
+              "label": "玄幻言情"
+            },
+            {
+              "value": "妖精情缘",
+              "label": "妖精情缘"
+            }
+          ]
+        },
+        {
+          "value": "轻小说",
+          "label": "轻小说",
+          "children": [
+            {
+              "value": "短篇小说",
+              "label": "短篇小说"
+            },
+            {
+              "value": "同人衍生",
+              "label": "同人衍生"
+            },
+            {
+              "value": "其他衍生",
+              "label": "其他衍生"
+            },
+            {
+              "value": "古典衍生",
+              "label": "古典衍生"
+            },
+            {
+              "value": "青春日常",
+              "label": "青春日常"
+            }
+          ]
+        },
+        {
+          "value": "科幻空间",
+          "label": "科幻空间",
+          "children": [
+            {
+              "value": "时空穿梭",
+              "label": "时空穿梭"
+            },
+            {
+              "value": "未来世界",
+              "label": "未来世界"
+            },
+            {
+              "value": "末世危机",
+              "label": "末世危机"
+            },
+            {
+              "value": "星际恋歌",
+              "label": "星际恋歌"
+            },
+            {
+              "value": "进化变异",
+              "label": "进化变异"
+            },
+            {
+              "value": "古武机甲",
+              "label": "古武机甲"
+            }
+          ]
+        },
+        {
+          "value": "仙侠奇缘",
+          "label": "仙侠奇缘",
+          "children": [
+            {
+              "value": "古典仙侠",
+              "label": "古典仙侠"
+            },
+            {
+              "value": "仙侣奇缘",
+              "label": "仙侣奇缘"
+            },
+            {
+              "value": "现代修真",
+              "label": "现代修真"
+            },
+            {
+              "value": "远古洪荒",
+              "label": "远古洪荒"
+            }
+          ]
+        },
+        {
+          "value": "悬疑小说",
+          "label": "悬疑小说",
+          "children": [
+            {
+              "value": "悬疑灵异",
+              "label": "悬疑灵异"
+            },
+            {
+              "value": "推理悬疑",
+              "label": "推理悬疑"
+            },
+            {
+              "value": "灵异惊悚",
+              "label": "灵异惊悚"
+            }
+          ]
+        },
+        {
+          "value": "游戏竞技",
+          "label": "游戏竞技",
+          "children": [
+            {
+              "value": "电子竞技",
+              "label": "电子竞技"
+            },
+            {
+              "value": "游戏异界",
+              "label": "游戏异界"
+            }
+          ]
+        },
+        {
+          "value": "悬疑侦探",
+          "label": "悬疑侦探",
+          "children": [
+            {
+              "value": "悬疑探险",
+              "label": "悬疑探险"
+            },
+            {
+              "value": "奇妙世界",
+              "label": "奇妙世界"
+            },
+            {
+              "value": "推理侦探",
+              "label": "推理侦探"
+            },
+            {
+              "value": "神秘文化",
+              "label": "神秘文化"
+            },
+            {
+              "value": "幽冥情缘",
+              "label": "幽冥情缘"
+            },
+            {
+              "value": "恐怖惊悚",
+              "label": "恐怖惊悚"
+            },
+            {
+              "value": "玄幻言情",
+              "label": "玄幻言情"
+            }
+          ]
+        },
+        {
+          "value": "玄幻言情",
+          "label": "玄幻言情",
+          "children": [
+            {
+              "value": "西方奇幻",
+              "label": "西方奇幻"
+            },
+            {
+              "value": "玄幻女强",
+              "label": "玄幻女强"
+            },
+            {
+              "value": "魔法幻情",
+              "label": "魔法幻情"
+            }
+          ]
+        },
+        {
+          "value": "短篇故事",
+          "label": "短篇故事",
+          "children": [
+            {
+              "value": "短篇其他",
+              "label": "短篇其他"
+            },
+            {
+              "value": "婚恋爱情",
+              "label": "婚恋爱情"
+            }
+          ]
+        },
+        {
+          "value": "二次元",
+          "label": "二次元",
+          "children": [
+            {
+              "value": "青春校园",
+              "label": "青春校园"
+            }
+          ]
+        },
+        {
+          "value": "年代小说",
+          "label": "年代小说",
+          "children": [
+            {
+              "value": "穿书小说",
+              "label": "穿书小说"
+            }
+          ]
+        },
+        {
+          "value": "网游竞技",
+          "label": "网游竞技",
+          "children": [
+            {
+              "value": "网友情缘",
+              "label": "网友情缘"
+            }
+          ]
+        },
+        {
+          "value": "现实生活",
+          "label": "现实生活",
+          "children": [
+            {
+              "value": "家与情感",
+              "label": "家与情感"
+            }
+          ]
+        },
+        {
+          "value": "脑洞小说",
+          "label": "脑洞小说",
+          "children": [
+            {
+              "value": "脑洞小说",
+              "label": "脑洞小说"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "value": "出版",
+      "label": "出版",
+      "children": [
+        {
+          "value": "文化",
+          "label": "文化",
+          "children": [
+            {
+              "value": "世界各国文化",
+              "label": "世界各国文化"
+            },
+            {
+              "value": "文化研究",
+              "label": "文化研究"
+            },
+            {
+              "value": "文化随笔",
+              "label": "文化随笔"
+            },
+            {
+              "value": "神笔文化",
+              "label": "神笔文化"
+            },
+            {
+              "value": "中国文化",
+              "label": "中国文化"
+            },
+            {
+              "value": "文化史",
+              "label": "文化史"
+            },
+            {
+              "value": "文化理论",
+              "label": "文化理论"
+            },
+            {
+              "value": "民俗文化",
+              "label": "民俗文化"
+            },
+            {
+              "value": "民族文化",
+              "label": "民族文化"
+            },
+            {
+              "value": "地域文化",
+              "label": "地域文化"
+            },
+            {
+              "value": "文化评述",
+              "label": "文化评述"
+            },
+            {
+              "value": "文化事业",
+              "label": "文化事业"
+            },
+            {
+              "value": "非物质文化遗产",
+              "label": "非物质文化遗产"
+            }
+          ]
+        },
+        {
+          "value": "政治",
+          "label": "政治",
+          "children": [
+            {
+              "value": "中国政治",
+              "label": "中国政治"
+            },
+            {
+              "value": "党政读物",
+              "label": "党政读物"
+            },
+            {
+              "value": "中国共产党",
+              "label": "中国共产党"
+            },
+            {
+              "value": "政治理论",
+              "label": "政治理论"
+            },
+            {
+              "value": "世界政治",
+              "label": "世界政治"
+            },
+            {
+              "value": "政治经典著作",
+              "label": "政治经典著作"
+            },
+            {
+              "value": "公共管理",
+              "label": "公共管理"
+            },
+            {
+              "value": "外交",
+              "label": "外交"
+            },
+            {
+              "value": "各国政治",
+              "label": "各国政治"
+            },
+            {
+              "value": "政治热点",
+              "label": "政治热点"
+            }
+          ]
+        },
+        {
+          "value": "短篇",
+          "label": "短篇",
+          "children": [
+            {
+              "value": "科幻恐怖",
+              "label": "科幻恐怖"
+            },
+            {
+              "value": "青春成长",
+              "label": "青春成长"
+            },
+            {
+              "value": "情感家庭",
+              "label": "情感家庭"
+            },
+            {
+              "value": "现代都市",
+              "label": "现代都市"
+            },
+            {
+              "value": "乡土中国",
+              "label": "乡土中国"
+            },
+            {
+              "value": "悬疑推理",
+              "label": "悬疑推理"
+            },
+            {
+              "value": "战争军旅",
+              "label": "战争军旅"
+            },
+            {
+              "value": "评论文集",
+              "label": "评论文集"
+            },
+            {
+              "value": "生活随笔",
+              "label": "生活随笔"
+            },
+            {
+              "value": "美文游记",
+              "label": "美文游记"
+            },
+            {
+              "value": "历史寻根",
+              "label": "历史寻根"
+            }
+          ]
+        },
+        {
+          "value": "法律",
+          "label": "法律",
+          "children": [
+            {
+              "value": "法律普及读物",
+              "label": "法律普及读物"
+            },
+            {
+              "value": "法律工具书",
+              "label": "法律工具书"
+            },
+            {
+              "value": "法律法规",
+              "label": "法律法规"
+            },
+            {
+              "value": "理论法学",
+              "label": "理论法学"
+            },
+            {
+              "value": "培训教材",
+              "label": "培训教材"
+            },
+            {
+              "value": "法律实务",
+              "label": "法律实务"
+            }
+          ]
+        },
+        {
+          "value": "亲子家教",
+          "label": "亲子家教",
+          "children": [
+            {
+              "value": "家教方法",
+              "label": "家教方法"
+            },
+            {
+              "value": "养育男孩",
+              "label": "养育男孩"
+            },
+            {
+              "value": "家教理论",
+              "label": "家教理论"
+            },
+            {
+              "value": "素质教育",
+              "label": "素质教育"
+            },
+            {
+              "value": "心理疏导",
+              "label": "心理疏导"
+            },
+            {
+              "value": "亲子育儿",
+              "label": "亲子育儿"
+            },
+            {
+              "value": "孕产知识",
+              "label": "孕产知识"
+            },
+            {
+              "value": "养育女孩",
+              "label": "养育女孩"
+            },
+            {
+              "value": "胎教早教",
+              "label": "胎教早教"
+            },
+            {
+              "value": "母婴喂养",
+              "label": "母婴喂养"
+            }
+          ]
+        },
+        {
+          "value": "文学",
+          "label": "文学",
+          "children": [
+            {
+              "value": "纪实文学",
+              "label": "纪实文学"
+            },
+            {
+              "value": "民间文学",
+              "label": "民间文学"
+            },
+            {
+              "value": "名家作品",
+              "label": "名家作品"
+            },
+            {
+              "value": "外国随笔",
+              "label": "外国随笔"
+            },
+            {
+              "value": "文集",
+              "label": "文集"
+            },
+            {
+              "value": "文学评论与鉴赏",
+              "label": "文学评论与鉴赏"
+            },
+            {
+              "value": "戏剧",
+              "label": "戏剧"
+            },
+            {
+              "value": "中国古代随笔",
+              "label": "中国古代随笔"
+            },
+            {
+              "value": "中国现当代随笔",
+              "label": "中国现当代随笔"
+            },
+            {
+              "value": "文学理论",
+              "label": "文学理论"
+            },
+            {
+              "value": "中国古诗词",
+              "label": "中国古诗词"
+            },
+            {
+              "value": "中国现当代诗歌",
+              "label": "中国现当代诗歌"
+            },
+            {
+              "value": "外国诗歌",
+              "label": "外国诗歌"
+            }
+          ]
+        },
+        {
+          "value": "心理学",
+          "label": "心理学",
+          "children": [
+            {
+              "value": "心理百科",
+              "label": "心理百科"
+            },
+            {
+              "value": "积极心理学",
+              "label": "积极心理学"
+            },
+            {
+              "value": "心理学经典著作",
+              "label": "心理学经典著作"
+            },
+            {
+              "value": "心理学理论与研究",
+              "label": "心理学理论与研究"
+            },
+            {
+              "value": "女性心理学",
+              "label": "女性心理学"
+            },
+            {
+              "value": "心理咨询与治疗",
+              "label": "心理咨询与治疗"
+            },
+            {
+              "value": "心灵疗愈",
+              "label": "心灵疗愈"
+            },
+            {
+              "value": "人格心理学",
+              "label": "人格心理学"
+            },
+            {
+              "value": "应用心理学",
+              "label": "应用心理学"
+            },
+            {
+              "value": "心理学入门",
+              "label": "心理学入门"
+            },
+            {
+              "value": "儿童心理学",
+              "label": "儿童心理学"
+            },
+            {
+              "value": "意识与潜意识",
+              "label": "意识与潜意识"
+            },
+            {
+              "value": "催眠",
+              "label": "催眠"
+            },
+            {
+              "value": "社会心理学",
+              "label": "社会心理学"
+            },
+            {
+              "value": "变态心理学",
+              "label": "变态心理学"
+            },
+            {
+              "value": "色彩心理学",
+              "label": "色彩心理学"
+            },
+            {
+              "value": "生理心理学",
+              "label": "生理心理学"
+            },
+            {
+              "value": "心理学研究方法与技术",
+              "label": "心理学研究方法与技术"
+            },
+            {
+              "value": "认知心理学",
+              "label": "认知心理学"
+            },
+            {
+              "value": "青少年心理学",
+              "label": "青少年心理学"
+            },
+            {
+              "value": "教育与发展心理学",
+              "label": "教育与发展心理学"
+            }
+          ]
+        },
+        {
+          "value": "哲学",
+          "label": "哲学",
+          "children": [
+            {
+              "value": "哲学知识读物",
+              "label": "哲学知识读物"
+            },
+            {
+              "value": "东方哲学",
+              "label": "东方哲学"
+            },
+            {
+              "value": "中国哲学",
+              "label": "中国哲学"
+            },
+            {
+              "value": "伦理学",
+              "label": "伦理学"
+            },
+            {
+              "value": "哲学理论与流派",
+              "label": "哲学理论与流派"
+            },
+            {
+              "value": "西方哲学",
+              "label": "西方哲学"
+            },
+            {
+              "value": "哲学经典著作",
+              "label": "哲学经典著作"
+            },
+            {
+              "value": "美学",
+              "label": "美学"
+            },
+            {
+              "value": "逻辑学",
+              "label": "逻辑学"
+            },
+            {
+              "value": "思维科学",
+              "label": "思维科学"
+            },
+            {
+              "value": "马克思哲学",
+              "label": "马克思哲学"
+            }
+          ]
+        },
+        {
+          "value": "漫画书",
+          "label": "漫画书",
+          "children": [
+            {
+              "value": "欧美漫画",
+              "label": "欧美漫画"
+            }
+          ]
+        },
+        {
+          "value": "军事",
+          "label": "军事",
+          "children": [
+            {
+              "value": "经典军事著作",
+              "label": "经典军事著作"
+            },
+            {
+              "value": "军事史",
+              "label": "军事史"
+            },
+            {
+              "value": "战略战术战役",
+              "label": "战略战术战役"
+            },
+            {
+              "value": "军事技术",
+              "label": "军事技术"
+            },
+            {
+              "value": "世界军事",
+              "label": "世界军事"
+            },
+            {
+              "value": "中国军事",
+              "label": "中国军事"
+            },
+            {
+              "value": "军事理论",
+              "label": "军事理论"
+            },
+            {
+              "value": "军事文学",
+              "label": "军事文学"
+            },
+            {
+              "value": "武器装备",
+              "label": "武器装备"
+            }
+          ]
+        },
+        {
+          "value": "玄幻",
+          "label": "玄幻",
+          "children": [
+            {
+              "value": "东方玄幻",
+              "label": "东方玄幻"
+            },
+            {
+              "value": "西方玄幻",
+              "label": "西方玄幻"
+            }
+          ]
+        },
+        {
+          "value": "武侠",
+          "label": "武侠",
+          "children": [
+            {
+              "value": "武侠幻想",
+              "label": "武侠幻想"
+            },
+            {
+              "value": "传统武侠",
+              "label": "传统武侠"
+            }
+          ]
+        },
+        {
+          "value": "期刊杂志",
+          "label": "期刊杂志",
+          "children": [
+            {
+              "value": "文学",
+              "label": "文学"
+            }
+          ]
+        },
+        {
+          "value": "医学",
+          "label": "医学",
+          "children": [
+            {
+              "value": "医院管理",
+              "label": "医院管理"
+            },
+            {
+              "value": "医学工具书",
+              "label": "医学工具书"
+            },
+            {
+              "value": "中医",
+              "label": "中医"
+            },
+            {
+              "value": "预防医学",
+              "label": "预防医学"
+            },
+            {
+              "value": "妇产科学",
+              "label": "妇产科学"
+            }
+          ]
+        },
+        {
+          "value": "计算机网络",
+          "label": "计算机网络",
+          "children": [
+            {
+              "value": "网络与通信",
+              "label": "网络与通信"
+            }
+          ]
+        },
+        {
+          "value": "悬疑",
+          "label": "悬疑",
+          "children": [
+            {
+              "value": "悬疑侦探",
+              "label": "悬疑侦探"
+            },
+            {
+              "value": "诡秘悬疑",
+              "label": "诡秘悬疑"
+            },
+            {
+              "value": "探险生存",
+              "label": "探险生存"
+            }
+          ]
+        },
+        {
+          "value": "农业林业",
+          "label": "农业林业",
+          "children": [
+            {
+              "value": "农学",
+              "label": "农学"
+            },
+            {
+              "value": "畜牧养殖",
+              "label": "畜牧养殖"
+            },
+            {
+              "value": "农业基础科学",
+              "label": "农业基础科学"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
