@@ -2,6 +2,8 @@
 
 [English README](README.md)
 
+> 预览分支：新增人物弧光、场景设计、对白/视角、节奏、修订案例和世界/势力离屏运转模块；这不是稳定版本。
+
 OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生态的小说成员。为保持兼容，安装后的插件仍叫 `novel-studio-skill`，其中包含三个可分别调用的 Skill：`$novel-studio` 负责小说工作流，`$wawa-submission` 负责非官方离线投稿材料预检，`$wawa-source` 负责校验、脱敏并聚合用户提供的蛙蛙统计快照。两个蛙蛙 Skill 都可单独安装和使用。
 
 ## 能力概览
@@ -29,7 +31,7 @@ OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生
 
 ### 作为 Codex 插件安装
 
-1. 按固定版本添加本仓库市场：`codex plugin marketplace add xwcai999/opencreator-novel --ref v0.5.0`。
+1. 按固定版本添加本仓库市场：`codex plugin marketplace add xwcai999/opencreator-novel --ref preview/novel-studio-0.6.0`。
 2. 安装插件：`codex plugin add novel-studio-skill@novel-studio-community`。
 3. 新建一个 Codex 会话，让插件注册表重新加载。
 4. 小说创作使用 `$novel-studio`；材料整理使用 `$wawa-submission`；离线统计快照使用 `$wawa-source`。

@@ -13,6 +13,8 @@ description: Plan, draft, continue, revise, review, migrate, package, and create
 - 从成长、关系、经营、信息、体验、主题、任务中选择一个主驱动，可选一个副驱动。
 - 仅当驱动包含“信息”或用户明确要求悬疑时，才强制规划谜团、线索和揭露。
 - 让人物在压力下作出带代价的具体选择；不要把人物写成流程执行器、作者观点接口或永远正确的理性人。
+- 把章纲事件转化为有策略、阻力、调整、转折和余波的场景；安静场景可以改变关系许可、理解或选择空间，不强制争吵、危机和反转。
+- 世界规则必须限制或打开行动，势力必须在主角不在场时仍会行动；只保留会改变人物处境、价格、关系或选择的世界观资料。
 - 每章必须给目标读者可感知的回报，但回报可以是关系变化、情绪余韵、生活质感、成长、收益、信息或任务进展，不强制危机、反转、悬念和章章钩子。
 - 把全书总字数当作结构结果，不把章节最低字数当作补写命令。章节不足时只允许增加有因果的场景、合并章节或回改大纲，禁止在高潮后追加复盘、表格、计划和主题解释凑字。
 - 先规划再写正文；用户已经提供可执行细纲时，直接提取章节控制卡，不重复要求规划或暂停。
@@ -32,7 +34,11 @@ description: Plan, draft, continue, revise, review, migrate, package, and create
 | 用户意图 | 执行模式 | 必读参考 |
 | --- | --- | --- |
 | 开书、构思、简介、总纲、卷纲、细纲 | 规划 | `references/planning-workflow.md`、`references/genre-drivers.md`、`references/reader-experience.md` |
-| 写一章、续写、日更、写某场景 | 章节写作 | `references/chapter-workflow.md`、`references/reader-experience.md`、当前题材驱动 |
+| 设计人物弧光、成长线、堕落线或关系变化 | 人物与关系 | `references/character-arc.md`、`references/planning-workflow.md` |
+| 设计世界规则、组织、家族、派系或势力博弈 | 世界与势力 | `references/world-faction-dynamics.md`、`references/planning-workflow.md` |
+| 写一章、续写、日更、写某场景 | 章节写作 | `references/chapter-workflow.md`、`references/reader-experience.md`、`references/scene-craft.md`、当前题材驱动 |
+| 写或修改对白、潜台词、人物声音、POV 或信息投放 | 对白与叙述 | `references/dialogue-pov.md`、`references/scene-craft.md` |
+| 检查节奏、因果升级或题材兑现 | 节奏与题材 | `references/pacing-genre.md`、`references/genre-drivers.md` |
 | 修改章节、改纲、检查逻辑、审稿、去 AI 味 | 修订审查 | `references/revision-review.md`、`references/authenticity-revision.md`、`references/quality-gates.md` |
 | 跨章趋势、阶段复盘、终稿审查 | 阶段审查 | `references/stage-review.md`、`references/quality-gates.md` |
 | 选择正文模型、固定写手、建立或调整文风 | 模型与文风 | `references/model-policy.md`、`references/style-profile.md`、`references/style-calibration.md` |
@@ -45,6 +51,8 @@ description: Plan, draft, continue, revise, review, migrate, package, and create
 投稿、出版、完整全本或五万字以上项目还必须读取 `references/publication-readiness.md`；它叠加在规划、章节写作和阶段审查之上，不替代对应参考。
 
 只读取当前任务对应的参考文件。所有参考文件都从本文件直接可达，不沿多层链接继续加载。
+
+章节写作默认读取场景模块；只有对白/POV 承担主要难点时再读 `dialogue-pov.md`，只有世界规则或势力行动直接改变本章选择时再读 `world-faction-dynamics.md`，只有跨场景节奏或题材兑现需要设计/修复时再读 `pacing-genre.md`。人物弧光只对关键人物和关键关系启用。修订根因不清、跨章复现或最小修订失败时再读 `revision-cases.md`，不要每次把全部创作参考装入上下文。
 
 ## 篇幅与复杂度
 
@@ -137,6 +145,12 @@ python scripts/activate_style_profile.py --project-root <目录> --calibration-r
 - `references/genre-drivers.md`：七类叙事驱动和非悬疑结构选择。
 - `references/planning-workflow.md`：短中长规划、读者契约与人物压力。
 - `references/reader-experience.md`：读者奖励、章节控制卡和防案例化原则。
+- `references/scene-craft.md`：场景欲望、策略、阻力、转折、状态变化与余波。
+- `references/character-arc.md`：保护性信念、生存策略、阶段测试、复发、不可逆选择与关系弧光。
+- `references/world-faction-dynamics.md`：世界规则、势力利益与资源、内部派系、离屏行动和反百科化。
+- `references/dialogue-pov.md`：对白目标、潜台词、人物声音、叙述距离、认知边界和信息投放。
+- `references/pacing-genre.md`：因果升级、场景/概述切换、张弛与题材专项兑现。
+- `references/revision-cases.md`：大纲、人物、场景、语言四层失败案例与最小有效修订。
 - `references/chapter-workflow.md`：写前、初稿、独立审查、修订与状态提交。
 - `references/revision-review.md`：首次读者模拟、人物声音、逆向审稿和改纲。
 - `references/authenticity-revision.md`：只读候选扫描、语境裁决、最小修订与盲读复审。

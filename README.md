@@ -2,6 +2,8 @@
 
 [中文 README](README.zh-CN.md)
 
+> Preview branch: creative-craft modules for character arcs, scene design, dialogue/POV, pacing, revision cases, and off-screen world/faction dynamics. This is not a stable release.
+
 OpenCreator Novel is the fiction member of the [OpenCreator](https://github.com/xwcai999/opencreator) ecosystem. Its installed plugin remains `novel-studio-skill` and contains three separately invokable Skills: `$novel-studio` for fiction work, `$wawa-submission` for unofficial offline submission-material checks, and `$wawa-source` for validating, redacting, and aggregating user-provided Wawa statistics snapshots. Both Wawa Skills can be installed and used independently.
 
 ## What it provides
@@ -29,7 +31,7 @@ See the bilingual [Privacy Policy](PRIVACY.md), [Terms of Use](TERMS.md), and [S
 
 ### Codex plugin installation
 
-1. Add this repository as a pinned marketplace: `codex plugin marketplace add xwcai999/opencreator-novel --ref v0.5.0`.
+1. Add this repository as a pinned marketplace: `codex plugin marketplace add xwcai999/opencreator-novel --ref preview/novel-studio-0.6.0`.
 2. Install the plugin: `codex plugin add novel-studio-skill@novel-studio-community`.
 3. Start a new Codex session so the plugin registry reloads.
 4. Invoke `$novel-studio` for fiction work, `$wawa-submission` for material preparation, or `$wawa-source` for offline statistics snapshots.
