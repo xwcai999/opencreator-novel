@@ -12,6 +12,8 @@ MODULES = (
     "revision-cases.md",
     "scene-craft.md",
     "world-faction-dynamics.md",
+    "fullbook-review.md",
+    "structure-similarity-review.md",
 )
 
 
@@ -28,8 +30,12 @@ class CreativeModuleContractTests(unittest.TestCase):
     def test_existing_safety_contracts_are_preserved(self) -> None:
         self.assertIn("审查普通 TXT/Markdown 或非 v2 项目时默认只读", SKILL_TEXT)
         self.assertIn("封面路由的可选外部依赖", SKILL_TEXT)
-        self.assertIn("通用阶段审查每 8–10 章及卷末执行", SKILL_TEXT)
-        self.assertIn("出版/投稿叠加路径中同一根因层最多两轮", SKILL_TEXT)
+        self.assertIn("投稿型每 5–6 章自动纯正文阶段盲读", SKILL_TEXT)
+        self.assertIn("非投稿型每 8–10 章", SKILL_TEXT)
+        self.assertIn("同一根因层最多连续两轮", SKILL_TEXT)
+
+    def test_fullbook_routes_are_public(self) -> None:
+        self.assertIn("完本复评、全本评分、终稿文学验收", SKILL_TEXT)
 
 
 if __name__ == "__main__":

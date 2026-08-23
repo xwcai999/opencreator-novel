@@ -85,7 +85,7 @@ v2 项目的章节 `status` 只能为 `draft`、`author-reviewed`、`reader-revi
 
 每个 v2 `accepted` 章节必须存在 `报告/章节审查/{chapter-id}.json`，记录 1–3 轮审查、作者/首次读者/文体/独立复审结果和最终正文 body 哈希。使用 `record_chapter_review.py` 固定生成；正文随后变化时校验会要求重新审查。schema-version 1 的旧项目保持可读可迁移，但只对这些新证据输出兼容警告。
 
-章节控制卡写入 `大纲/细纲/` 或当轮工作记录，可使用 `reader_reward`、`active_pressure`、`human_cost`、`counter_logic`、`choice`、`memory_point`、`local_closure`、`carryover_debt`、`forbidden_pattern`。控制卡是规划输入，不是第二套权威状态；审稿报告不得混入章节正文。
+章节控制卡写入 `大纲/细纲/` 或当轮工作记录，可使用 `reader_reward`、`active_pressure`、`human_cost`、`counter_logic`、`choice`、`memory_point`、`local_closure`、`carryover_debt`、`forbidden_pattern`、`promise_delta`、`stage_momentum`。后两项用于核对标题承诺的可见行动和阶段状态变化；新建或重写控制卡必须填写，旧项目可以在工作记录中派生，不因未迁移旧卡构成确定性硬错。控制卡是规划输入，不是第二套权威状态；审稿报告不得混入章节正文。
 
 ## 待兑现台账 v2
 
@@ -109,7 +109,7 @@ ID | 类型 | 承诺 | 状态 | 首次出现 | 最近推进 | 兑现窗口 | 正
 
 - `init_project.py`：只创建新项目；目标目录非空时拒绝执行；创建默认 inactive 的文风档案，不自动启用。
 - `validate_project.py`：只读取并输出错误/警告；不修改正文和状态。
-- `record_chapter_review.py`：在四类审查通过后写入固定位置的接受证据；不修改正文或权威状态，也不覆盖已有报告。
+- `record_chapter_review.py`：在四类审查通过后写入固定位置的接受证据；不修改正文或权威状态。同一 `chapter-id` 重审时允许覆盖旧审查报告，但必须基于当前正文 body 重新计算哈希并保留真实轮次与结论；不得在正文未变化时伪造新证据。
 - `reindex_project.py`：从 Markdown 重建确定性 JSON 索引；重复运行结果应一致。
 - `build_context_pack.py`：生成派生上下文包；不得回写状态。
 - `expectation_ledger.py`：解析并审计待兑现生命周期，报告结构错误、逾期项与冷线。

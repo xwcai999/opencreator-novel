@@ -39,7 +39,7 @@ jobs:
           manifest_path = Path("plugins/novel-studio-skill/.codex-plugin/plugin.json")
           manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
           assert manifest.get("name") == "novel-studio-skill", "manifest.name must match the plugin folder"
-          assert manifest.get("version") == "0.6.0-preview.1", "manifest.version must be 0.6.0-preview.1"
+          assert manifest.get("version") == "0.6.0-preview.2", "manifest.version must be 0.6.0-preview.2"
           assert re.fullmatch(r"\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?", manifest.get("version", "")), "manifest.version must be semver with optional prerelease"
           assert isinstance(manifest.get("description"), str) and manifest["description"], "manifest.description is required"
           assert isinstance(manifest.get("author"), dict) and manifest["author"].get("name"), "manifest.author.name is required"
