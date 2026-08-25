@@ -2,6 +2,8 @@
 
 [English README](README.md)
 
+> 正式版 `0.6.0`：在创作方法模块之上新增全本文学复评、跨章结构雷同门禁、阶段动量检查和章节审查证据安全归档。
+
 OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生态的小说成员。为保持兼容，安装后的插件仍叫 `novel-studio-skill`，其中包含三个可分别调用的 Skill：`$novel-studio` 负责小说工作流，`$wawa-submission` 负责非官方离线投稿材料预检，`$wawa-source` 负责校验、脱敏并聚合用户提供的蛙蛙统计快照。两个蛙蛙 Skill 都可单独安装和使用。
 
 ## 能力概览
@@ -10,6 +12,7 @@ OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生
 - **写作与续写：**章节控制卡、固定主笔顺序、压力下的人物选择与代价，以及每章可感知的读者回报。故事不需要时，不强制谜团、章末悬念、反转、固定章节长度或统一公式。
 - **连续性管理：**Markdown 与 frontmatter 是权威事实。待兑现台账追踪 `planted`、`reinforced`、`active`、`partial`、`fulfilled`、`dropped` 等状态；上下文包和确定性检索让续写前必须读取的来源可见。
 - **审查与修订：**确定性项目校验、章节接受证据、读者/文风审查、阶段审查、文体趋势证据和保守的真实性修订候选。报告不会回写或覆盖正文事实。
+- **全本复评：**冻结同一正文版本执行全本文学审查，分别检查相邻章节、阶段窗口和全书结构雷同，避免把逐章接受错误表述成全本质量通过。
 - **迁移与交付：**从旧 `novel-planner` 项目安全迁移，隔离派生输出，投稿准备试写、纯正文盲读和面向投稿的包装指导。
 - **封面：**可选的 `$codex-gpt-image` 工作流一次生成完整画面和书名。Skill 不读取或保存 OAuth 凭据；旧的本地叠字脚本不属于当前封面路径。
 - **蛙蛙投稿适配（非官方）：**整理可复制材料单并执行本地文件/字段预检。集成模式可复用 Novel Studio 项目证据；独立模式只需要元数据和稿件。内置版本化的离线分类/标签快照用于确定性预检，当前页面仍是最终依据。它不会登录、上传、勾选协议或提交。
@@ -29,7 +32,7 @@ OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生
 
 ### 作为 Codex 插件安装
 
-1. 按固定版本添加本仓库市场：`codex plugin marketplace add xwcai999/opencreator-novel --ref v0.5.0`。
+1. 按固定版本添加本仓库市场：`codex plugin marketplace add xwcai999/opencreator-novel --ref v0.6.0`。
 2. 安装插件：`codex plugin add novel-studio-skill@novel-studio-community`。
 3. 新建一个 Codex 会话，让插件注册表重新加载。
 4. 小说创作使用 `$novel-studio`；材料整理使用 `$wawa-submission`；离线统计快照使用 `$wawa-source`。

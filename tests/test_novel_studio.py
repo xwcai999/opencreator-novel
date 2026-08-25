@@ -584,6 +584,54 @@ allow-deceased-present: []
             _, payload = run_script("validate_project.py", "--project-root", project, expect=1)
             self.assertTrue(any("正文哈希已变化" in error for error in payload["errors"]))
 
+    def test_replacing_review_requires_changed_body_and_archives_previous_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            project = Path(temp) / "book"
+            self.init_project(project, "short", "light", "growth")
+            self.add_continuity_fixture(project)
+            report = project / "报告/章节审查/chapter-001.json"
+            previous = json.loads(report.read_text(encoding="utf-8"))
+
+            _, unchanged = run_script(
+                "record_chapter_review.py",
+                "--project-root",
+                project,
+                "--chapter",
+                1,
+                "--rounds",
+                2,
+                "--author-passed",
+                "--reader-passed",
+                "--style-passed",
+                "--rereview-passed",
+                "--replace-existing",
+                expect=1,
+            )
+            self.assertIn("正文哈希未变化", unchanged["error"])
+            self.assertEqual(previous, json.loads(report.read_text(encoding="utf-8")))
+            self.assertFalse((report.parent / "历史").exists())
+
+            chapter = project / "正文/第1章_钟声.md"
+            write(chapter, chapter.read_text(encoding="utf-8").replace("第一次听见", "再次听见"))
+            _, replaced = run_script(
+                "record_chapter_review.py",
+                "--project-root",
+                project,
+                "--chapter",
+                1,
+                "--rounds",
+                2,
+                "--author-passed",
+                "--reader-passed",
+                "--style-passed",
+                "--rereview-passed",
+                "--replace-existing",
+            )
+            self.assertTrue(replaced["replaces_existing"])
+            self.assertNotEqual(previous["body_sha256"], replaced["body_sha256"])
+            history = report.parent / "历史" / f"chapter-001-{previous['body_sha256'][:12]}.json"
+            self.assertEqual(previous, json.loads(history.read_text(encoding="utf-8")))
+
     def test_project_title_rejects_explicit_author_or_pen_name_attribution(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             base = Path(temp)

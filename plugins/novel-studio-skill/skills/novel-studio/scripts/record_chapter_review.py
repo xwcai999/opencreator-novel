@@ -33,6 +33,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--override-reason")
     parser.add_argument("--style-passed", action="store_true")
     parser.add_argument("--rereview-passed", action="store_true")
+    parser.add_argument("--replace-existing", action="store_true", help="显式重审同章时归档并替换旧审查证据")
     return parser
 
 
@@ -52,16 +53,28 @@ def main() -> int:
         chapter_id = str(metadata.get("id") or "")
         if not chapter_id:
             raise ValueError(f"{path}: 缺少章节 id")
+        current_hash = sha256_text(body)
         output = root / "报告" / "章节审查" / f"{chapter_id}.json"
         if output.exists():
-            raise ValueError(f"审查证据已存在，拒绝静默覆盖: {output}")
+            if not args.replace_existing:
+                raise ValueError(f"审查证据已存在，拒绝静默覆盖: {output}")
+            previous = json.loads(output.read_text(encoding="utf-8"))
+            if previous.get("chapter_id") != chapter_id or previous.get("chapter_number") != args.chapter:
+                raise ValueError(f"旧审查证据与当前章节不匹配，拒绝替换: {output}")
+            old_hash = str(previous.get("body_sha256") or "unknown")
+            if old_hash == current_hash:
+                raise ValueError("正文哈希未变化，拒绝伪造新的审查证据")
+            history = output.parent / "历史" / f"{chapter_id}-{old_hash[:12]}.json"
+            if history.exists():
+                raise ValueError(f"历史审查证据已存在，拒绝覆盖: {history}")
+            atomic_write_json(history, previous)
         payload = {
             "schema_version": 1,
             "type": "chapter-review",
             "chapter_id": chapter_id,
             "chapter_number": args.chapter,
             "chapter_path": path.relative_to(root).as_posix(),
-            "body_sha256": sha256_text(body),
+            "body_sha256": current_hash,
             "rounds": args.rounds,
             "author_review": "passed",
             "first_reader_review": "overridden" if args.user_override else "passed",
@@ -70,6 +83,7 @@ def main() -> int:
             "user_override": bool(args.user_override),
             "override_reason": str(args.override_reason or "").strip(),
             "result": "accepted",
+            "replaces_existing": bool(args.replace_existing),
         }
         atomic_write_json(output, payload)
     except (OSError, UnicodeError, ValueError) as exc:

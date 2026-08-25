@@ -13,7 +13,10 @@ description: Plan, draft, continue, revise, review, migrate, package, and create
 - 从成长、关系、经营、信息、体验、主题、任务中选择一个主驱动，可选一个副驱动。
 - 仅当驱动包含“信息”或用户明确要求悬疑时，才强制规划谜团、线索和揭露。
 - 让人物在压力下作出带代价的具体选择；不要把人物写成流程执行器、作者观点接口或永远正确的理性人。
+- 把章纲事件转化为有策略、阻力、调整、转折和余波的场景；安静场景可以改变关系许可、理解或选择空间，不强制争吵、危机和反转。
+- 世界规则必须限制或打开行动，势力必须在主角不在场时仍会行动；只保留会改变人物处境、价格、关系或选择的世界观资料。
 - 每章必须给目标读者可感知的回报，但回报可以是关系变化、情绪余韵、生活质感、成长、收益、信息或任务进展，不强制危机、反转、悬念和章章钩子。
+- 把标题承诺和主线目标拆成可观察的阶段变化；每个阶段窗口结束时，至少有一项人物处境、关系/权力、资源/场地、外部目标或主角的不可逆行动发生实质改变。单纯重复倒计时、资源恶化、口头重申边界或再说明“还没有结果”不算阶段推进。
 - 把全书总字数当作结构结果，不把章节最低字数当作补写命令。章节不足时只允许增加有因果的场景、合并章节或回改大纲，禁止在高潮后追加复盘、表格、计划和主题解释凑字。
 - 先规划再写正文；用户已经提供可执行细纲时，直接提取章节控制卡，不重复要求规划或暂停。
 - 不把“首次埋设、首次展示或阶段回响”误记为最终兑现。续写前必须审计 `状态/待兑现.md`，并把全部非终态项优先注入上下文；不得只凭上一章或查询词召回长线事实。
@@ -21,7 +24,8 @@ description: Plan, draft, continue, revise, review, migrate, package, and create
 - 把“去 AI 味”作为真实性修订，不做来源检测或分数优化；机器只定位候选证据，语境裁决和盲读复审决定是否返修。
 - 仅把 `status: active` 的 `设定/文风档案.md` 作为正文约束；文件缺失或未激活时保持当前写作流程，不阻断规划、写作、审查或迁移。单书校准默认由隔离模型上下文盲评，不要求用户选择样稿。
 - 使用 subagent 写作时采用“主 Agent 总编裁决 + 固定写手顺序创作 + 两类独立审稿并行”的调度；不得并行撰写相邻章节，具体见 `references/chapter-workflow.md`。
-- 投稿、出版或五万字以上的完整作品必须先通过自动试写门禁和纯正文阶段盲读。用户负责创作方向与外部提交授权，不作为逐章或每批次的常规质检员；只有继续执行必须改变题材、结局或核心设定时才请求用户决策。
+- 显式投稿或出版项目都必须通过适配其篇幅的试写与纯正文阶段盲读；目标五万字以上时必须执行完整三章、每个投稿阶段窗口、卷末和全本门禁。阶段盲读还必须验证标题承诺有可复述的阶段兑现、外部处境没有原地循环、近期章节没有同型节拍。用户负责创作方向与外部提交授权，不作为逐章或每批次的常规质检员；只有继续执行必须改变题材、结局或核心设定时才请求用户决策。
+- 章节逐一 `accepted`、确定性校验通过、待兑现项归零和终章局部 PASS 都只是制作完整证据，不能单独推出“全本质量通过”。终章完成后必须冻结同一版本纯正文，执行全本文学复评；结构雷同审查必须同时比较相邻 3 章、当前阶段和全书，不得只查重复词句。
 - 审稿者只写报告，不得修改正文。正文和场景返修始终交给同一卷的固定写手；不得把审查解释、连续性辩护或项目术语补进小说。
 - 保留用户已有正文、设定和事实。审查普通 TXT/Markdown 或非 v2 项目时默认只读，不启动三章试写、不回写原稿；只有用户明确要求规范化或改稿时，才在新目录建立 v2 项目或隔离副本。迁移与回归测试也必须写入新目录。
 - 封面必须显式使用 `$codex-gpt-image` 一次生成完整画面与作品书名；禁止“无字底图＋本地叠字”、后期补字或程序化替换书名。有语义、可合理辨识的可见文字只能是 `作品.md` 中的规范书名，严禁笔名、作者名、署名、账号、Logo、水印和附加文案；不可读环境纹理由人工结合读者观感裁决。
@@ -32,9 +36,14 @@ description: Plan, draft, continue, revise, review, migrate, package, and create
 | 用户意图 | 执行模式 | 必读参考 |
 | --- | --- | --- |
 | 开书、构思、简介、总纲、卷纲、细纲 | 规划 | `references/planning-workflow.md`、`references/genre-drivers.md`、`references/reader-experience.md` |
-| 写一章、续写、日更、写某场景 | 章节写作 | `references/chapter-workflow.md`、`references/reader-experience.md`、当前题材驱动 |
+| 设计人物弧光、成长线、堕落线或关系变化 | 人物与关系 | `references/character-arc.md`、`references/planning-workflow.md` |
+| 设计世界规则、组织、家族、派系或势力博弈 | 世界与势力 | `references/world-faction-dynamics.md`、`references/planning-workflow.md` |
+| 写一章、续写、日更、写某场景 | 章节写作 | `references/chapter-workflow.md`、`references/reader-experience.md`、`references/scene-craft.md`、当前题材驱动 |
+| 写或修改对白、潜台词、人物声音、POV 或信息投放 | 对白与叙述 | `references/dialogue-pov.md`、`references/scene-craft.md` |
+| 检查节奏、因果升级或题材兑现 | 节奏与题材 | `references/pacing-genre.md`、`references/genre-drivers.md` |
 | 修改章节、改纲、检查逻辑、审稿、去 AI 味 | 修订审查 | `references/revision-review.md`、`references/authenticity-revision.md`、`references/quality-gates.md` |
-| 跨章趋势、阶段复盘、终稿审查 | 阶段审查 | `references/stage-review.md`、`references/quality-gates.md` |
+| 跨章趋势、阶段复盘、卷末审查 | 阶段审查 | `references/stage-review.md`、`references/structure-similarity-review.md`、`references/quality-gates.md` |
+| 完本复评、全本评分、终稿文学验收 | 完本审查 | `references/fullbook-review.md`、`references/structure-similarity-review.md`、`references/quality-gates.md` |
 | 选择正文模型、固定写手、建立或调整文风 | 模型与文风 | `references/model-policy.md`、`references/style-profile.md`、`references/style-calibration.md` |
 | 初始化项目、检查目录、建立索引 | 项目维护 | `references/project-schema.md` |
 | 从旧 `novel-planner` 项目迁移 | 安全迁移 | `references/migration.md` |
@@ -42,9 +51,11 @@ description: Plan, draft, continue, revise, review, migrate, package, and create
 | 生成或修改封面 | 封面 | `references/cover-workflow.md`，并显式使用 `$codex-gpt-image` |
 | 审查 Skill 的来源、授权或安全边界 | 方法审计 | `references/method-sources.md` |
 
-投稿、出版、完整全本或五万字以上项目还必须读取 `references/publication-readiness.md`；它叠加在规划、章节写作和阶段审查之上，不替代对应参考。
+投稿、出版、完整全本或五万字以上项目还必须读取 `references/publication-readiness.md`；它叠加在规划、章节写作、阶段审查和完本审查之上，不替代对应参考。
 
 只读取当前任务对应的参考文件。所有参考文件都从本文件直接可达，不沿多层链接继续加载。
+
+章节写作默认读取场景模块；只有对白/POV 承担主要难点时再读 `dialogue-pov.md`，只有世界规则或势力行动直接改变本章选择时再读 `world-faction-dynamics.md`，只有跨场景节奏或题材兑现需要设计/修复时再读 `pacing-genre.md`。人物弧光只对关键人物和关键关系启用。修订根因不清、跨章复现或最小修订失败时再读 `revision-cases.md`，不要每次把全部创作参考装入上下文。
 
 ## 篇幅与复杂度
 
@@ -56,8 +67,8 @@ description: Plan, draft, continue, revise, review, migrate, package, and create
 | 篇幅 | 默认规划范围 | 审查节奏 |
 | --- | --- | --- |
 | `short` | 一次规划完整故事、场景和结局 | 每章轻量接受；中点和终稿阶段审查 |
-| `medium` | 完整总纲，当前篇章与后续 3–5 章细化 | 每章接受；每 5–6 章阶段审查 |
-| `long` | 全书方向 + 当前卷完整 + 后续 5–10 章 | 每章接受；通用阶段审查每 8–10 章及卷末执行；出版/投稿项目叠加每 6 章窗口 |
+| `medium` | 完整总纲，当前篇章与后续 3–5 章细化 | 每章接受；投稿型每 5–6 章阶段审查，非投稿型每 5–6 章或篇章结束时审查 |
+| `long` | 全书方向 + 当前卷完整 + 后续 5–10 章 | 每章接受；投稿型每 5–6 章自动纯正文阶段盲读，非投稿型每 8–10 章，并在卷末复审 |
 
 复杂度负责“读取与证据深度”，不改变题材结构：
 
@@ -126,9 +137,10 @@ python scripts/activate_style_profile.py --project-root <目录> --calibration-r
 - 请求文件时写入目标项目或明确的暂存目录，并报告新增、修改和未触碰的文件。
 - 新书规划包含一句话卖点、作品简介、短简介、标签、读者契约和前三章具体承诺。
 - 投稿型长篇在自动试写、阶段盲读和整本投稿 TXT 盲读全部通过前，不得标记“全本质量通过”或进入最终投稿包装。
+- 所有完本项目在 `references/fullbook-review.md` 的硬错误与阅读阻断（包括结构阻断）清零前，不得标记“全本质量通过”；正文发生任何改动后，旧全本盲审和评分立即失效。用户仍可明确选择带风险发布，但必须标记为“用户覆盖发布/风险保留”，不得冒充质量 PASS。
 - 章节交付说明读者回报、人物选择与代价、审查轮次、接受结论和获准提交的状态变化。
 - 审查先列硬错误，再列阅读阻断项，最后列工艺警告；不要用总分掩盖问题。
-- 普通修订中同一章最多三轮“审查—定向修订”；出版/投稿叠加路径中同一根因层最多两轮。仍不通过时停止盲改，定位大纲、人物、场景或语言根因。
+- 同一章节或阶段最多形成三个提交盲审的正文版本；同一根因层最多连续两轮。第二轮仍复现时，第三版必须来自更高层根因重构；第三版仍不通过时停止盲改，定位需要改变的大纲、人物、场景或语言根因。
 - 封面交付报告 `$codex-gpt-image`、`model-native-title` 生成模式、输出路径、可见文字白名单和验证结果，不展示或记录认证令牌。
 
 ## 参考导航
@@ -137,11 +149,19 @@ python scripts/activate_style_profile.py --project-root <目录> --calibration-r
 - `references/genre-drivers.md`：七类叙事驱动和非悬疑结构选择。
 - `references/planning-workflow.md`：短中长规划、读者契约与人物压力。
 - `references/reader-experience.md`：读者奖励、章节控制卡和防案例化原则。
+- `references/scene-craft.md`：场景欲望、策略、阻力、转折、状态变化与余波。
+- `references/character-arc.md`：保护性信念、生存策略、阶段测试、复发、不可逆选择与关系弧光。
+- `references/world-faction-dynamics.md`：世界规则、势力利益与资源、内部派系、离屏行动和反百科化。
+- `references/dialogue-pov.md`：对白目标、潜台词、人物声音、叙述距离、认知边界和信息投放。
+- `references/pacing-genre.md`：因果升级、场景/概述切换、张弛与题材专项兑现。
+- `references/revision-cases.md`：大纲、人物、场景、语言四层失败案例与最小有效修订。
 - `references/chapter-workflow.md`：写前、初稿、独立审查、修订与状态提交。
 - `references/revision-review.md`：首次读者模拟、人物声音、逆向审稿和改纲。
 - `references/authenticity-revision.md`：只读候选扫描、语境裁决、最小修订与盲读复审。
 - `references/quality-gates.md`：硬错误、阅读阻断项、工艺警告与覆盖规则。
 - `references/stage-review.md`：跨章趋势、审查频率与分析器使用。
+- `references/structure-similarity-review.md`：相邻章节、阶段窗口与全书尺度的结构雷同审查。
+- `references/fullbook-review.md`：终章后的全本文学复评、隔离盲审与发布档位裁决。
 - `references/model-policy.md`：正文、总编和审稿角色的模型选择与稳定性策略。
 - `references/style-profile.md`：可选文风档案的激活、证据和更新规则。
 - `references/style-calibration.md`：每本小说独立的 A/B/C 匿名样稿、隔离模型盲评与安全激活。

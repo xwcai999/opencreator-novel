@@ -2,6 +2,8 @@
 
 [中文 README](README.zh-CN.md)
 
+> Stable `0.6.0`: creative-craft modules plus whole-book literary review, cross-chapter structural-similarity gates, stage-momentum checks, and safely archived chapter-review replacement.
+
 OpenCreator Novel is the fiction member of the [OpenCreator](https://github.com/xwcai999/opencreator) ecosystem. Its installed plugin remains `novel-studio-skill` and contains three separately invokable Skills: `$novel-studio` for fiction work, `$wawa-submission` for unofficial offline submission-material checks, and `$wawa-source` for validating, redacting, and aggregating user-provided Wawa statistics snapshots. Both Wawa Skills can be installed and used independently.
 
 ## What it provides
@@ -10,6 +12,7 @@ OpenCreator Novel is the fiction member of the [OpenCreator](https://github.com/
 - **Drafting and continuation:** chapter control cards, fixed-writer sequencing, pressure-driven character choices, and a reader-visible return in every chapter. The workflow does not force a mystery, cliffhanger, reversal, or fixed chapter length when the story does not need one.
 - **Continuity management:** Markdown plus frontmatter are authoritative. The expectation ledger tracks planted, reinforced, active, partial, fulfilled, and dropped promises; context packs and deterministic retrieval make required sources explicit before continuation.
 - **Review and revision:** deterministic project validation, chapter acceptance evidence, reader/style review, stage review, prose-trend evidence, and conservative authenticity-revision candidates. Reports never overwrite manuscript facts.
+- **Whole-book review:** freezes one manuscript version for full-text literary review, separates adjacent-chapter, stage, and book-wide structural similarity, and prevents chapter-level acceptance from being misreported as whole-book quality approval.
 - **Migration and delivery:** safe migration from an older `novel-planner` project, isolated derived output, publication-readiness pilots, blind full-text checks, and submission-oriented packaging guidance.
 - **Covers:** an optional `$codex-gpt-image` workflow can generate the complete cover and title in one model-native image. The skill does not read or store OAuth credentials; the legacy local title-overlay script is not the current cover path.
 - **Wawa submission adapter (unofficial):** prepares a material sheet and performs local file/metadata checks. Integrated mode reuses Novel Studio evidence; standalone mode needs only metadata plus a manuscript. It includes versioned offline category and tag snapshots for deterministic pre-checks, while the current page remains final. It never logs in, uploads, accepts agreements, or submits.
@@ -29,7 +32,7 @@ See the bilingual [Privacy Policy](PRIVACY.md), [Terms of Use](TERMS.md), and [S
 
 ### Codex plugin installation
 
-1. Add this repository as a pinned marketplace: `codex plugin marketplace add xwcai999/opencreator-novel --ref v0.5.0`.
+1. Add this repository as a pinned marketplace: `codex plugin marketplace add xwcai999/opencreator-novel --ref v0.6.0`.
 2. Install the plugin: `codex plugin add novel-studio-skill@novel-studio-community`.
 3. Start a new Codex session so the plugin registry reloads.
 4. Invoke `$novel-studio` for fiction work, `$wawa-submission` for material preparation, or `$wawa-source` for offline statistics snapshots.
