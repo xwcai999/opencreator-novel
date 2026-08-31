@@ -1,4 +1,4 @@
 interface:
-  display_name: "蛙蛙投稿材料"
-  short_description: "可独立或结合小说项目进行非官方蛙蛙投稿材料预检"
-  default_prompt: "使用 $wawa-submission 以独立或集成模式准备蛙蛙投稿材料；用离线分类/标签快照做预检，但以当前页面为最终依据。不要登录、上传或声称平台已接受。"
+  display_name: "蛙蛙投稿工作流"
+  short_description: "准备执行就绪投稿包，并连接蛙蛙页面预填到人工提交前"
+  default_prompt: "使用 $wawa-submission 为这本小说准备执行就绪投稿包，并在我授权时连接页面预填。"

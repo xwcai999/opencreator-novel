@@ -4,10 +4,10 @@
   "fixed": true,
   "refresh_policy": "explicit-only",
   "source_url": "https://wawawriter.com/app/submission/create",
-  "source_asset_url": "https://wawawriter.com/app/assets/CreateSubmission.CD6Gp4cQ.js",
-  "source_asset_sha256": "5362d5a98d45396defc2874d1a30788b81a91473c1635c97eb9f04555fa846a5",
-  "fetched_at": "2026-08-19T12:53:19+08:00",
-  "submission_type": "长篇",
+  "source_asset_url": "https://wawawriter.com/app/assets/CreateSubmission.DxMIslNC.js",
+  "source_asset_sha256": "2976396767e97255a2707aa023e6bc367e7b8986cd2acb3a0416a7cc4ef22133",
+  "fetched_at": "2026-08-31T01:32:17+08:00",
+  "submission_type": "页面动态选择",
   "path_count": 350,
   "counts_by_root": [
     {
