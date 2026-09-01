@@ -5,7 +5,6 @@
   "refresh_policy": "user-confirmed-only",
   "source": {
     "kind": "user-provided-screenshot",
-    "path": "assets/wawa-tags-source.png",
     "sha256": "bfc0fc57e3bce29c6e2d128421d222de4c93a0771462c2b0b5bfc3ab64eccd9b",
     "captured_at": "2026-08-19"
   },
