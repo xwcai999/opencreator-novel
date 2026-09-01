@@ -9,7 +9,9 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Mapping, Sequence
+
+from validate_submission import validate_submission
 
 
 ALLOWED_ACTIONS = {"dry-run", "prepare", "login", "campaigns", "taxonomy-sync", "status", "cancel"}
@@ -53,6 +55,30 @@ def build_command(args: argparse.Namespace, engine: Path) -> list[str]:
     return command
 
 
+def preflight_execution_package(metadata_path: str | Path) -> Mapping[str, Any]:
+    """在启动页面引擎前执行 v2 契约和真实文件内容预检。"""
+
+    path = Path(metadata_path).expanduser().resolve(strict=False)
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            metadata = json.load(handle)
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"无法读取投稿包: {exc.__class__.__name__}") from exc
+    if not isinstance(metadata, Mapping):
+        raise ValueError("投稿包 JSON 须为对象")
+    if metadata.get("schema_version") != 2:
+        raise ValueError("页面工作流只消费 schema v2；请先将 v1/无版本材料升级为 v2 投稿包")
+
+    # v2 文件路径必须为绝对路径；Node 引擎随后再按 storage.allowedRoots
+    # 执行 containment 校验。此处负责补齐真实图片/DOCX 解析与业务契约预检。
+    result = validate_submission(metadata)
+    if not result.get("ok"):
+        issues = [*(result.get("errors") or []), *(result.get("blockers") or [])]
+        summary = "；".join(str(item) for item in issues[:5]) or "投稿包未通过本地预检"
+        raise ValueError(f"投稿包预检失败: {summary}")
+    return result
+
+
 def parser() -> argparse.ArgumentParser:
     value = argparse.ArgumentParser(description="蛙蛙投稿 Skill 页面工作流入口（不支持最终提交）")
     value.add_argument("action", choices=sorted(ALLOWED_ACTIONS))
@@ -72,6 +98,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         engine = resolve_engine(args.engine)
         command = build_command(args, engine)
+        if args.action in {"dry-run", "prepare"}:
+            preflight_execution_package(args.metadata)
         completed = subprocess.run(command, check=False)
         return completed.returncode
     except (FileNotFoundError, OSError, ValueError) as exc:
@@ -81,5 +109,4 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
 

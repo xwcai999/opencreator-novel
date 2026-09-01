@@ -1,126 +1,107 @@
 #!/usr/bin/env python3
-"""蛙蛙执行就绪投稿包的轻量预检。
+"""蛙蛙投稿材料离线预检。
 
-本脚本只检查投稿所需的元数据、文件格式/大小和固定分类标签。
-字数仅作信息展示，不阻断用户主动触发的页面预填。
-传入 Novel Studio 项目目录时，仅适配读取 ``作品.md``、``正文`` 和 ``报告``，
-不执行连续性、审稿或封面生成检查。
+本模块只负责材料层校验：元数据、封面、正文来源和平台表单字数门槛。
+它不登录、不上传，也不替代 ``novel-studio`` 的项目连续性/审稿校验。
+
+安全约定：相对文件路径以 ``base_dir`` 解析；独立模式以该目录为边界，
+集成 v2 模式以项目根目录为边界。解析后的真实路径必须留在边界内，因而
+``..`` 和指向边界外的符号链接都会失败。输出中的路径默认只使用相对路径
+或文件名，避免把本机目录写入报告。
 """
 
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import hashlib
+import importlib.util
 import json
+import os
 import re
+import struct
 import sys
+import xml.etree.ElementTree as ET
+import zipfile
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
 
+PUBLIC_SIGNING_GUIDANCE = 100_000
+HISTORICAL_ONGOING_OBSERVATION = 20_000
+HISTORICAL_COMPLETED_OBSERVATION = 30_000
 MAX_TITLE_LENGTH = 200
+V2_MAX_TITLE_LENGTH = 80
 MAX_PEN_NAME_LENGTH = 40
 MAX_SUMMARY_LENGTH = 500
 MAX_CUSTOM_TAG_LENGTH = 10
+V2_MAX_CUSTOM_TAG_LENGTH = 30
+MAX_TAGS = 10
+MAX_CUSTOM_TAGS = 5
 COVER_MAX_BYTES = 5 * 1024 * 1024
 MANUSCRIPT_MAX_BYTES = 50 * 1024 * 1024
+DOCX_DOCUMENT_XML_MAX_BYTES = 64 * 1024 * 1024
 ALLOWED_CHANNELS = {"男频", "女频", "全频"}
 ALLOWED_STATUSES = {"连载", "完结"}
+ALLOWED_ENTRY_CATEGORIES = {"短篇", "长篇"}
 ALLOWED_MANUSCRIPT_EXTENSIONS = {".doc", ".docx", ".txt"}
 ALLOWED_COVER_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
-REFERENCE_ROOT = Path(__file__).resolve().parent.parent / "references"
+REFERENCE_ROOT = Path(__file__).resolve().parents[1] / "references"
 DEFAULT_CATEGORY_SNAPSHOT = REFERENCE_ROOT / "wawa-categories.json"
 DEFAULT_TAG_SNAPSHOT = REFERENCE_ROOT / "wawa-tags.json"
+RULE_CACHE = {
+    "public_signing_guidance": {
+        "checked_at": "2026-08-12",
+        "source": "https://wawawriter.com/app/submission",
+        "confidence": "high",
+        "stale_after": "2026-08-19",
+    },
+    "historical_form_observation": {
+        "checked_at": "2026-08-12",
+        "source": "historical local page observation; not a current signing rule",
+        "confidence": "medium",
+        "stale_after": "2026-08-19",
+    },
+    "field_and_file_snapshot": {
+        "checked_at": "2026-08-11",
+        "source": "https://wawawriter.com/app/submission/create",
+        "confidence": "medium",
+        "stale_after": "2026-08-18",
+    },
+}
 
 
-# 允许表单 JSON 使用中文字段或常见英文别名。规范化输出始终使用下面的英文键。
 FIELD_ALIASES: dict[str, tuple[str, ...]] = {
     "title": ("title", "name", "book_title", "bookTitle", "作品名", "书名", "作品名称"),
-    "pen_name": (
-        "pen_name",
-        "penName",
-        "pen-name",
-        "author",
-        "author_name",
-        "authorName",
-        "nickname",
-        "笔名",
-        "作者笔名",
-    ),
+    "pen_name": ("pen_name", "penName", "pen-name", "author", "author_name", "authorName", "nickname", "笔名", "作者笔名"),
     "summary": ("summary", "synopsis", "description", "简介", "内容简介", "作品简介"),
     "channel": ("channel", "频道"),
     "status": ("status", "publication_status", "publicationStatus", "作品状态", "状态"),
-    "categories": (
-        "categories",
-        "category",
-        "genre",
-        "category_path",
-        "categoryPath",
-        "三级类目",
-        "三级分类",
-        "分类",
-        "分类目录",
-    ),
+    "categories": ("categories", "category", "genre", "category_path", "categoryPath", "三级类目", "三级分类", "分类", "分类目录"),
     "tags": ("tags", "tag", "标签", "关键词"),
     "custom_tags": ("custom_tags", "customTags", "custom-tags", "自定义标签", "自定义tag"),
     "cover": ("cover", "cover_path", "coverPath", "封面", "封面图片", "cover_file"),
-    "manuscript": (
-        "manuscript",
-        "submission",
-        "submission_file",
-        "submissionFile",
-        "file",
-        "投稿文件",
-        "投稿稿件",
-        "稿件",
-    ),
-    "word_count": (
-        "word_count",
-        "wordCount",
-        "words",
-        "字数",
-        "字数统计",
-        "总字数",
-    ),
-    "history_achievement_images": (
-        "history_achievement_images",
-        "historyAchievementImages",
-        "history_images",
-        "历史成绩证明",
-        "历史成绩图片",
-    ),
+    "manuscript": ("manuscript", "submission", "submission_file", "submissionFile", "file", "投稿文件", "投稿稿件", "稿件"),
+    "word_count": ("word_count", "wordCount", "words", "字数", "字数统计", "总字数"),
+    "history_achievement_images": ("history_achievement_images", "historyAchievementImages", "history_images", "历史成绩证明", "历史成绩图片"),
 }
-
 _NESTED_METADATA_KEYS = ("metadata", "meta", "book", "作品", "投稿", "submission")
 _STATUS_ALIASES = {
-    "ongoing": "连载",
-    "serializing": "连载",
-    "serial": "连载",
-    "连载中": "连载",
-    "连载": "连载",
-    "completed": "完结",
-    "complete": "完结",
-    "finished": "完结",
-    "finish": "完结",
-    "已完结": "完结",
-    "完结": "完结",
+    "ongoing": "连载", "serializing": "连载", "serial": "连载", "连载中": "连载", "连载": "连载",
+    "completed": "完结", "complete": "完结", "finished": "完结", "finish": "完结", "已完结": "完结", "完结": "完结",
 }
 _CHANNEL_ALIASES = {"male": "男频", "female": "女频", "all": "全频"}
 
 
-def _clean_text(value: Any) -> str:
-    """将表单值转为去首尾空白的文本；None 视为空。"""
+class PathSafetyError(ValueError):
+    """路径无法在声明的边界内安全解析。"""
 
-    if value is None:
-        return ""
-    if isinstance(value, str):
-        return value.strip()
-    return str(value).strip()
+
+def _clean_text(value: Any) -> str:
+    return "" if value is None else (value.strip() if isinstance(value, str) else str(value).strip())
 
 
 def _lookup(data: Mapping[str, Any], aliases: Iterable[str]) -> Any:
-    """从顶层及少量常见嵌套对象中读取一个字段。"""
-
     for key in aliases:
         if key in data:
             return data[key]
@@ -134,35 +115,19 @@ def _lookup(data: Mapping[str, Any], aliases: Iterable[str]) -> Any:
 
 
 def _as_items(value: Any) -> list[str]:
-    """把数组或常见分隔符文本转成非空项目列表。"""
-
     if value is None:
         return []
     if isinstance(value, Mapping):
-        # 三级类目常以 level1/level2/level3 或中文键表示。
-        ordered = []
-        for key in (
-            "level1",
-            "level2",
-            "level3",
-            "一级",
-            "二级",
-            "三级",
-            "一级类目",
-            "二级类目",
-            "三级类目",
-        ):
-            if key in value:
-                item = _clean_text(value[key])
-                if item:
-                    ordered.append(item)
-        return ordered
+        result = []
+        for key in ("level1", "level2", "level3", "一级", "二级", "三级", "一级类目", "二级类目", "三级类目"):
+            item = _clean_text(value.get(key))
+            if item:
+                result.append(item)
+        return result
     if isinstance(value, (list, tuple, set)):
         return [_clean_text(item) for item in value if _clean_text(item)]
     text = _clean_text(value)
-    if not text:
-        return []
-    return [part.strip() for part in re.split(r"[,，;；/、|>＞\\]", text) if part.strip()]
+    return [part.strip() for part in re.split(r"[,，;；/、|>＞\\]", text) if part.strip()] if text else []
 
 
 def _normalise_channel(value: Any) -> str:
@@ -179,21 +144,49 @@ def _int_value(value: Any) -> int | None:
     if isinstance(value, bool):
         return None
     try:
-        number = int(value)
+        return int(value)
     except (TypeError, ValueError):
         return None
-    return number
 
 
 def _count_text_units(text: str) -> int:
-    """统计去掉空白后的字符数，适合作为中文投稿字数的保守估计。"""
-
     return sum(1 for char in text if not char.isspace())
 
 
-def _resolve_path(value: Any, base_dir: Path | None) -> Path | None:
-    if value is None:
+def _rule_cache_status(today: dt.date | None = None) -> dict[str, dict[str, Any]]:
+    current = today or dt.date.today()
+    result: dict[str, dict[str, Any]] = {}
+    for name, record in RULE_CACHE.items():
+        item = dict(record)
+        item["stale"] = current > dt.date.fromisoformat(item["stale_after"])
+        item["verification_status"] = "未实时复核" if item["stale"] else "缓存期内，提交前仍需实时复核"
+        result[name] = item
+    return result
+
+
+def _within(root: Path, path: Path) -> bool:
+    try:
+        path.relative_to(root)
+        return True
+    except ValueError:
+        return False
+
+
+def _display_path(path: Path | None, root: Path | None = None) -> str | None:
+    """返回不泄漏本机根目录的相对路径。"""
+
+    if path is None:
         return None
+    if root is not None:
+        try:
+            relative = path.relative_to(root)
+            return relative.as_posix() or "."
+        except ValueError:
+            return f"<outside>/{path.name}"
+    return path.name or "."
+
+
+def _resolve_path(value: Any, base_dir: Path | None, allowed_root: Path | None = None) -> Path | None:
     if isinstance(value, Mapping):
         for key in ("path", "file", "filename", "file_path", "filePath", "地址", "路径"):
             if key in value:
@@ -202,10 +195,28 @@ def _resolve_path(value: Any, base_dir: Path | None) -> Path | None:
     text = _clean_text(value)
     if not text:
         return None
-    path = Path(text).expanduser()
-    if not path.is_absolute() and base_dir is not None:
-        path = base_dir / path
-    return path.resolve()
+    candidate = Path(text).expanduser()
+    if not candidate.is_absolute():
+        candidate = (base_dir if base_dir is not None else Path.cwd()) / candidate
+    try:
+        resolved = candidate.resolve(strict=False)
+    except (OSError, RuntimeError) as exc:
+        raise PathSafetyError("路径无法解析") from exc
+    boundary_source = allowed_root if allowed_root is not None else base_dir
+    if boundary_source is not None:
+        boundary = boundary_source.expanduser().resolve(strict=False)
+        if not _within(boundary, resolved):
+            raise PathSafetyError("路径越界")
+    return resolved
+
+
+def _path_text(value: Any) -> str:
+    if isinstance(value, Mapping):
+        for key in ("path", "file", "filename", "file_path", "filePath", "地址", "路径"):
+            if key in value:
+                value = value[key]
+                break
+    return _clean_text(value)
 
 
 def _declared_size(value: Any) -> int | None:
@@ -217,261 +228,393 @@ def _declared_size(value: Any) -> int | None:
     return None
 
 
-def _cover_extension(value: Any, path: Path | None) -> str:
-    format_value: Any = None
-    if isinstance(value, Mapping):
-        for key in ("format", "extension", "ext", "mime", "格式"):
-            if key in value:
-                format_value = value[key]
-                break
-    if format_value:
-        text = _clean_text(format_value).lower()
-        if "/" in text:
-            text = text.rsplit("/", 1)[-1]
-        if not text.startswith("."):
-            text = "." + text
-        return text
-    return path.suffix.lower() if path else ""
-
-
-def _file_size(path: Path) -> int | None:
+def _file_size(path: Path | None) -> int | None:
     try:
-        if path.is_file():
-            return path.stat().st_size
+        return path.stat().st_size if path is not None and path.is_file() else None
     except OSError:
         return None
-    return None
 
 
 def _read_text(path: Path) -> str:
-    # 投稿 TXT/项目文档通常为 UTF-8；替换异常字节以保证预检不中断。
     return path.read_text(encoding="utf-8", errors="replace")
 
 
-def _validate_cover(value: Any, base_dir: Path | None, errors: list[str], info: dict[str, Any]) -> None:
-    if value in (None, ""):
-        return
-    path = _resolve_path(value, base_dir)
-    extension = _cover_extension(value, path)
-    info["path"] = str(path) if path else None
-    info["extension"] = extension
-    if extension not in ALLOWED_COVER_EXTENSIONS:
-        errors.append(
-            f"封面格式不支持: {extension or '未知'}，仅支持 "
-            + ", ".join(sorted(ALLOWED_COVER_EXTENSIONS))
-        )
-    size = _file_size(path) if path else None
-    if size is None:
-        size = _declared_size(value)
-    if path and not path.is_file():
-        errors.append(f"封面文件不存在: {path}")
-    if size is not None:
-        info["size_bytes"] = size
-        if size < 0:
-            errors.append("封面文件大小不能为负数")
-        elif size > COVER_MAX_BYTES:
-            errors.append(f"封面文件过大: {size} 字节，限制为 5MB")
+def _valid_png(data: bytes) -> bool:
+    if not data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return False
+    offset, saw_ihdr, saw_iend = 8, False, False
+    while offset + 12 <= len(data):
+        length = struct.unpack(">I", data[offset : offset + 4])[0]
+        kind = data[offset + 4 : offset + 8]
+        end = offset + 12 + length
+        if end > len(data):
+            return False
+        chunk = data[offset + 8 : offset + 8 + length]
+        crc = struct.unpack(">I", data[offset + 8 + length : end])[0]
+        if (zlib_crc := __import__("zlib").crc32(kind + chunk) & 0xFFFFFFFF) != crc:
+            return False
+        if not saw_ihdr:
+            if kind != b"IHDR" or length != 13:
+                return False
+            width, height = struct.unpack(">II", chunk[:8])
+            if width <= 0 or height <= 0:
+                return False
+            saw_ihdr = True
+        if kind == b"IEND":
+            saw_iend = True
+            return saw_ihdr and length == 0 and end == len(data)
+        offset = end
+    return False
 
 
-def _validate_history_images(
+def _valid_jpeg(data: bytes) -> bool:
+    if len(data) < 4 or data[:2] != b"\xff\xd8" or data[-2:] != b"\xff\xd9":
+        return False
+    i, saw_frame = 2, False
+    frame_markers = set(range(0xC0, 0xC4)) | set(range(0xC5, 0xC8)) | set(range(0xC9, 0xCC)) | set(range(0xCD, 0xD0))
+    while i < len(data) - 1:
+        if data[i] != 0xFF:
+            i += 1
+            continue
+        while i < len(data) and data[i] == 0xFF:
+            i += 1
+        if i >= len(data):
+            break
+        marker = data[i]
+        i += 1
+        if marker in (0xD8, 0xD9) or 0xD0 <= marker <= 0xD7:
+            continue
+        if i + 2 > len(data):
+            return False
+        length = struct.unpack(">H", data[i : i + 2])[0]
+        if length < 2 or i + length > len(data):
+            return False
+        if marker in frame_markers and length >= 7:
+            height, width = struct.unpack(">HH", data[i + 3 : i + 7])
+            if width <= 0 or height <= 0:
+                return False
+            saw_frame = True
+        i += length
+        if marker == 0xDA:
+            break
+    return saw_frame
+
+
+def _valid_webp(data: bytes) -> bool:
+    if len(data) < 16 or data[:4] != b"RIFF" or data[8:12] != b"WEBP":
+        return False
+    declared = struct.unpack("<I", data[4:8])[0]
+    return declared + 8 <= len(data) and data[12:16] in {b"VP8 ", b"VP8L", b"VP8X"}
+
+
+def _validate_image_bytes(path: Path, extension: str) -> str | None:
+    try:
+        data = path.read_bytes()
+    except OSError as exc:
+        return f"无法读取图片: {exc.__class__.__name__}"
+    if extension in {".jpg", ".jpeg"} and not _valid_jpeg(data):
+        return "JPEG 文件结构无效"
+    if extension == ".png" and not _valid_png(data):
+        return "PNG 文件结构无效"
+    if extension == ".webp" and not _valid_webp(data):
+        return "WEBP 文件结构无效"
+    return None
+
+
+def _validate_cover(
     value: Any,
     base_dir: Path | None,
     errors: list[str],
-) -> list[dict[str, Any]]:
-    if value in (None, "", []):
-        return []
-    items = list(value) if isinstance(value, (list, tuple)) else [value]
-    if not 1 <= len(items) <= 10:
-        errors.append("历史成绩证明须为 1—10 张图片")
-    results: list[dict[str, Any]] = []
-    for index, item in enumerate(items, start=1):
-        info: dict[str, Any] = {"index": index}
-        before = len(errors)
-        _validate_cover(item, base_dir, errors, info)
-        if len(errors) > before:
-            errors[before:] = [f"历史成绩证明第 {index} 张：{message}" for message in errors[before:]]
-        results.append(info)
-    return results
+    info: dict[str, Any],
+    *,
+    allowed_root: Path | None = None,
+    label: str = "封面",
+    validate_content: bool = True,
+) -> None:
+    if value in (None, ""):
+        return
+    try:
+        path = _resolve_path(value, base_dir, allowed_root)
+    except PathSafetyError as exc:
+        errors.append(f"{label}{exc}")
+        return
+    extension = path.suffix.lower() if path else ""
+    info.update({"path": _display_path(path, base_dir), "extension": extension})
+    if extension not in ALLOWED_COVER_EXTENSIONS:
+        errors.append(f"{label}格式不支持: {extension or '未知'}，仅支持 " + ", ".join(sorted(ALLOWED_COVER_EXTENSIONS)))
+    size = _file_size(path)
+    if size is None:
+        size = _declared_size(value)
+    if path is None or not path.is_file():
+        errors.append(f"{label}文件不存在: {_display_path(path, base_dir) or '<unknown>'}")
+    elif extension in ALLOWED_COVER_EXTENSIONS and validate_content:
+        reason = _validate_image_bytes(path, extension)
+        if reason:
+            errors.append(f"{label}文件内容无效: {reason}")
+    if size is not None:
+        info["size_bytes"] = size
+        if size < 0:
+            errors.append(f"{label}文件大小不能为负数")
+        elif size > COVER_MAX_BYTES:
+            errors.append(f"{label}文件过大: {size} 字节，限制为 5MB")
+
+
+def _extract_docx_text(path: Path) -> str:
+    try:
+        with zipfile.ZipFile(path) as archive:
+            names = set(archive.namelist())
+            required = {"[Content_Types].xml", "word/document.xml"}
+            if not required.issubset(names):
+                raise ValueError("DOCX 缺少必要的 OOXML 部件")
+            if any(info.flag_bits & 0x1 for info in archive.infolist()):
+                raise ValueError("DOCX 含加密部件，无法离线解析")
+            document_info = archive.getinfo("word/document.xml")
+            if document_info.file_size > DOCX_DOCUMENT_XML_MAX_BYTES:
+                raise ValueError("DOCX 正文 XML 解压后过大")
+            root = ET.fromstring(archive.read("word/document.xml"))
+    except (OSError, zipfile.BadZipFile, KeyError, ET.ParseError) as exc:
+        raise ValueError("DOCX 不是可解析的 OOXML 文档") from exc
+    return "".join(element.text or "" for element in root.iter() if element.tag.rsplit("}", 1)[-1] == "t")
 
 
 def _validate_manuscript(
     value: Any,
     base_dir: Path | None,
     errors: list[str],
+    blockers: list[str],
     info: dict[str, Any],
     *,
+    allowed_root: Path | None = None,
     source_label: str = "投稿文件",
 ) -> str | None:
-    """检查投稿文件并在可读文本时返回其正文。"""
-
     if value in (None, ""):
         return None
-    path = _resolve_path(value, base_dir)
+    try:
+        path = _resolve_path(value, base_dir, allowed_root)
+    except PathSafetyError as exc:
+        errors.append(f"{source_label}{exc}")
+        return None
     if path is None:
         errors.append(f"{source_label}路径为空")
         return None
     extension = path.suffix.lower()
-    size = _file_size(path)
-    info.update({"path": str(path), "extension": extension})
+    info.update({"path": _display_path(path, base_dir), "extension": extension})
     if extension not in ALLOWED_MANUSCRIPT_EXTENSIONS:
-        errors.append(
-            f"{source_label}扩展名不支持: {extension or '无'}，仅支持 "
-            + ", ".join(sorted(ALLOWED_MANUSCRIPT_EXTENSIONS))
-        )
+        errors.append(f"{source_label}扩展名不支持: {extension or '无'}，仅支持 " + ", ".join(sorted(ALLOWED_MANUSCRIPT_EXTENSIONS)))
+    size = _file_size(path)
     if size is None:
         size = _declared_size(value)
     if not path.is_file():
-        errors.append(f"{source_label}文件不存在: {path}")
+        errors.append(f"{source_label}文件不存在: {_display_path(path, base_dir)}")
+        return None
     if size is not None:
         info["size_bytes"] = size
         if size < 0:
             errors.append(f"{source_label}文件大小不能为负数")
         elif size > MANUSCRIPT_MAX_BYTES:
             errors.append(f"{source_label}文件过大: {size} 字节，限制为 50MB")
-    if path.is_file() and extension == ".txt":
+    if extension == ".txt":
         try:
+            info["parse_status"] = "parsed"
             return _read_text(path)
         except OSError as exc:
-            errors.append(f"无法读取{source_label}: {exc}")
+            errors.append(f"无法读取{source_label}: {exc.__class__.__name__}")
+            return None
+    if extension == ".docx":
+        try:
+            text = _extract_docx_text(path)
+            info["parse_status"] = "parsed"
+            return text
+        except ValueError as exc:
+            info["parse_status"] = "invalid"
+            errors.append(f"{source_label} DOCX 解析失败: {exc}")
+            return None
+    if extension == ".doc":
+        # 标准库无法可靠解析旧式 OLE Compound Document；拒绝以声明字数冒充实测。
+        info["parse_status"] = "unsupported"
+        blockers.append(f"{source_label}为旧式 DOC，当前离线预检无法可靠解析；请转换为真实 DOCX 或 TXT")
     return None
 
 
+def _safe_project_file(path: Path, root: Path) -> Path | None:
+    try:
+        resolved = path.resolve(strict=False)
+    except (OSError, RuntimeError):
+        return None
+    return resolved if _within(root, resolved) else None
+
+
 def validate_project_adapter(project_root: str | Path) -> dict[str, Any]:
-    """读取 Novel Studio 项目的投稿相关材料。
+    """读取项目投稿相关材料，并拒绝正文/报告符号链接越界。"""
 
-    这是有意保持很窄的适配层：只访问 ``作品.md``、``正文`` 和 ``报告``，
-    不检查项目的连续性、章节审稿结果或封面内容。
-    """
-
-    root = Path(project_root).expanduser().resolve()
-    result: dict[str, Any] = {
-        "path": str(root),
-        "ok": True,
-        "errors": [],
-        "warnings": [],
-        "read_files": [],
-        "report_files": [],
-        "word_count": None,
-    }
-    errors = result["errors"]
-    warnings = result["warnings"]
+    try:
+        root = Path(project_root).expanduser().resolve(strict=False)
+    except (OSError, RuntimeError):
+        return {"path": ".", "ok": False, "errors": ["项目目录路径无法解析"], "warnings": [], "read_files": [], "report_files": [], "word_count": None}
+    result: dict[str, Any] = {"path": ".", "ok": True, "errors": [], "warnings": [], "read_files": [], "report_files": [], "word_count": None}
+    errors: list[str] = result["errors"]
+    warnings: list[str] = result["warnings"]
     if not root.is_dir():
-        errors.append(f"项目目录不存在: {root}")
+        errors.append("项目目录不存在")
         result["ok"] = False
         return result
 
-    project_file = root / "作品.md"
-    if project_file.is_file():
+    project_file = _safe_project_file(root / "作品.md", root)
+    if project_file is not None and project_file.is_file():
         try:
             _read_text(project_file)
             result["read_files"].append("作品.md")
         except OSError as exc:
-            errors.append(f"无法读取作品.md: {exc}")
+            errors.append(f"无法读取作品.md: {exc.__class__.__name__}")
     else:
         warnings.append("项目缺少作品.md，无法读取项目元信息")
 
     body_root = root / "正文"
-    text_files: list[Path] = []
     if not body_root.is_dir():
         warnings.append("项目缺少正文目录，无法从项目统计字数")
     else:
-        try:
-            for path in sorted(body_root.rglob("*")):
-                if not path.is_file() or path.suffix.lower() not in {".md", ".markdown", ".txt"}:
+        text_files: list[Path] = []
+        for current, dirs, files in os.walk(body_root, followlinks=False):
+            current_path = Path(current)
+            for directory in list(dirs):
+                candidate = current_path / directory
+                if candidate.is_symlink():
+                    if _safe_project_file(candidate, root) is None:
+                        errors.append(f"正文路径越界: {_display_path(candidate, root)}")
+                    dirs.remove(directory)
+            for filename in files:
+                candidate = current_path / filename
+                safe = _safe_project_file(candidate, root)
+                if safe is None:
+                    errors.append(f"正文路径越界: {_display_path(candidate, root)}")
                     continue
-                text_files.append(path)
-        except OSError as exc:
-            errors.append(f"无法遍历正文目录: {exc}")
-        total = 0
-        for path in text_files:
+                if safe.suffix.lower() in {".md", ".markdown", ".txt"} and safe.is_file():
+                    text_files.append(safe)
+        total, readable = 0, 0
+        for path in sorted(set(text_files)):
             try:
-                text = _read_text(path)
+                total += _count_text_units(_read_text(path))
+                readable += 1
+                result["read_files"].append(path.relative_to(root).as_posix())
             except OSError as exc:
-                errors.append(f"无法读取正文文件 {path.relative_to(root).as_posix()}: {exc}")
-                continue
-            relative = path.relative_to(root).as_posix()
-            result["read_files"].append(relative)
-            total += _count_text_units(text)
-        if text_files:
+                errors.append(f"无法读取正文文件 {path.relative_to(root).as_posix()}: {exc.__class__.__name__}")
+        if readable:
             result["word_count"] = total
-        else:
+        elif not text_files:
             warnings.append("正文目录中没有可读取的 Markdown/TXT 文件")
 
     report_root = root / "报告"
     if report_root.is_dir():
-        try:
-            result["report_files"] = [
-                path.relative_to(root).as_posix()
-                for path in sorted(report_root.rglob("*"))
-                if path.is_file()
-            ]
-        except OSError as exc:
-            errors.append(f"无法遍历报告目录: {exc}")
-
+        for current, dirs, files in os.walk(report_root, followlinks=False):
+            current_path = Path(current)
+            for directory in list(dirs):
+                candidate = current_path / directory
+                if candidate.is_symlink():
+                    if _safe_project_file(candidate, root) is None:
+                        errors.append(f"报告路径越界: {_display_path(candidate, root)}")
+                    dirs.remove(directory)
+            for filename in files:
+                candidate = current_path / filename
+                safe = _safe_project_file(candidate, root)
+                if safe is None:
+                    errors.append(f"报告路径越界: {_display_path(candidate, root)}")
+                    continue
+                result["report_files"].append(safe.relative_to(root).as_posix())
     result["ok"] = not errors
     return result
 
 
 def _normalise_categories(data: Mapping[str, Any]) -> list[str]:
-    value = _lookup(data, FIELD_ALIASES["categories"])
-    items = _as_items(value)
+    items = _as_items(_lookup(data, FIELD_ALIASES["categories"]))
     if items:
         return items
-    # 兼容表单按三级字段分别提交的情况。
-    separate: list[str] = []
-    for aliases in (
-        ("category_level_1", "categoryLevel1", "一级类目"),
-        ("category_level_2", "categoryLevel2", "二级类目"),
-        ("category_level_3", "categoryLevel3", "三级类目"),
-    ):
+    result: list[str] = []
+    for aliases in (("category_level_1", "categoryLevel1", "一级类目"), ("category_level_2", "categoryLevel2", "二级类目"), ("category_level_3", "categoryLevel3", "三级类目")):
         item = _clean_text(_lookup(data, aliases))
         if item:
-            separate.append(item)
-    return separate
+            result.append(item)
+    return result
 
 
 def _normalise_tags(value: Any) -> list[str]:
     return _as_items(value)
 
 
-def _snapshot_path(value: str | Path | None, default_path: Path) -> Path:
-    """解析快照路径；未显式传入时使用 Skill 内置的固定快照。"""
+def _load_snapshot(
+    value: str | Path | None,
+    default_path: Path,
+    *,
+    label: str,
+    base_dir: Path | None,
+) -> tuple[Mapping[str, Any] | None, dict[str, Any], str | None]:
+    """加载固定分类/标签快照，显式路径仍遵循 base_dir 边界。"""
 
-    return Path(value).expanduser().resolve() if value is not None else default_path.resolve()
-
-
-def _load_snapshot(path: Path, *, label: str) -> tuple[Mapping[str, Any] | None, dict[str, Any], str | None]:
-    """读取快照，并把读取状态写入可序列化摘要。"""
-
-    info: dict[str, Any] = {"path": str(path), "loaded": False}
     try:
+        if value is None:
+            path = default_path.resolve(strict=False)
+            display = f"references/{path.name}"
+            bundled = True
+        else:
+            path = _resolve_path(value, base_dir)
+            if path is None:
+                raise PathSafetyError("路径为空")
+            display = _display_path(path, base_dir)
+            bundled = False
         raw = path.read_bytes()
-        value = json.loads(raw.decode("utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-        return None, info, f"无法读取{label}快照: {exc}"
-    if not isinstance(value, Mapping):
-        return None, info, f"{label}快照格式无效：根节点须为对象"
-    info["loaded"] = True
-    info["schema_version"] = value.get("schema_version")
-    info["sha256"] = hashlib.sha256(raw).hexdigest()
-    return value, info, None
+        payload = json.loads(raw.decode("utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError, PathSafetyError) as exc:
+        return None, {"loaded": False, "path": None}, f"无法读取{label}快照: {exc}"
+    if not isinstance(payload, Mapping):
+        return None, {"loaded": False, "path": display}, f"{label}快照格式无效：根节点须为对象"
+    return payload, {
+        "loaded": True,
+        "path": display,
+        "bundled": bundled,
+        "schema_version": payload.get("schema_version"),
+        "sha256": hashlib.sha256(raw).hexdigest(),
+    }, None
 
 
 def _snapshot_node_name(node: Any) -> str:
     if not isinstance(node, Mapping):
         return ""
-    # 页面展示优先使用 label；缺少 label 时兼容仅存 value 的精简快照。
     return _clean_text(node.get("label") if node.get("label") is not None else node.get("value"))
+
+
+def _snapshot_source(value: Any) -> dict[str, Any]:
+    """返回快照来源摘要，并过滤本机路径等本地实现细节。"""
+
+    if not isinstance(value, Mapping):
+        return {}
+    return {
+        str(key): item
+        for key, item in value.items()
+        if str(key).lower() not in {"path", "file", "filename", "local_path"}
+        and item not in (None, "")
+    }
 
 
 def _load_category_snapshot(
     value: str | Path | None,
+    *,
+    base_dir: Path | None,
+    strict_metadata: bool = True,
 ) -> tuple[set[tuple[str, str, str]] | None, dict[str, Any], str | None]:
-    path = _snapshot_path(value, DEFAULT_CATEGORY_SNAPSHOT)
-    payload, info, error = _load_snapshot(path, label="作品分类")
+    payload, info, error = _load_snapshot(
+        value,
+        DEFAULT_CATEGORY_SNAPSHOT,
+        label="作品分类",
+        base_dir=base_dir,
+    )
     if error or payload is None:
         return None, info, error
-
+    if strict_metadata and (
+        payload.get("schema_version") != 1
+        or payload.get("type") != "wawa-category-snapshot"
+        or payload.get("fixed") is not True
+        or payload.get("refresh_policy") != "explicit-only"
+    ):
+        return None, info, "作品分类快照格式无效：固定快照元数据不匹配"
     roots = payload.get("categories")
     if not isinstance(roots, list):
         return None, info, "作品分类快照格式无效：缺少 categories 数组"
@@ -499,41 +642,191 @@ def _load_category_snapshot(
                 if category_path in paths:
                     return None, info, "作品分类快照格式无效：存在重复完整三级路径"
                 paths.add(category_path)
-
+    declared_count = _int_value(payload.get("path_count"))
     if invalid or not paths:
         return None, info, "作品分类快照格式无效：须包含完整三级分类树"
-    declared_count = payload.get("path_count")
-    if declared_count is not None:
-        expected_count = _int_value(declared_count)
-        if expected_count is None or expected_count != len(paths):
-            return None, info, "作品分类快照格式无效：path_count 与实际三级路径数量不一致"
-    info["path_count"] = len(paths)
-    info["roots"] = sorted({item[0] for item in paths})
+    if payload.get("path_count") is not None and declared_count != len(paths):
+        return None, info, "作品分类快照格式无效：path_count 与实际三级路径数量不一致"
+    source = payload.get("source")
+    if not isinstance(source, Mapping):
+        source = {
+            "url": payload.get("source_url"),
+            "asset_url": payload.get("source_asset_url"),
+            "asset_sha256": payload.get("source_asset_sha256"),
+            "fetched_at": payload.get("fetched_at"),
+        }
+    info.update({
+        "path_count": len(paths),
+        "roots": sorted({item[0] for item in paths}),
+        "source": _snapshot_source(source),
+    })
     return paths, info, None
 
 
-def _load_tag_snapshot(value: str | Path | None) -> tuple[set[str] | None, dict[str, Any], str | None]:
-    path = _snapshot_path(value, DEFAULT_TAG_SNAPSHOT)
-    payload, info, error = _load_snapshot(path, label="作品标签")
+def _load_tag_snapshot(
+    value: str | Path | None,
+    *,
+    base_dir: Path | None,
+    strict_metadata: bool = True,
+) -> tuple[set[str] | None, dict[str, Any], str | None]:
+    payload, info, error = _load_snapshot(
+        value,
+        DEFAULT_TAG_SNAPSHOT,
+        label="作品标签",
+        base_dir=base_dir,
+    )
     if error or payload is None:
         return None, info, error
-
+    if strict_metadata and (
+        payload.get("schema_version") != 1
+        or payload.get("type") != "wawa-tag-snapshot"
+        or payload.get("fixed") is not True
+        or payload.get("refresh_policy") != "user-confirmed-only"
+    ):
+        return None, info, "作品标签快照格式无效：固定快照元数据不匹配"
     raw_tags = payload.get("tags")
     if not isinstance(raw_tags, list):
         return None, info, "作品标签快照格式无效：缺少 tags 数组"
     normalised_tags = [_clean_text(item) for item in raw_tags if _clean_text(item)]
     tags = set(normalised_tags)
+    declared_count = _int_value(payload.get("count"))
     if not tags:
         return None, info, "作品标签快照格式无效：tags 数组不能为空"
     if len(tags) != len(normalised_tags):
         return None, info, "作品标签快照格式无效：存在重复标签"
-    declared_count = payload.get("count")
-    if declared_count is not None:
-        expected_count = _int_value(declared_count)
-        if expected_count is None or expected_count != len(tags):
-            return None, info, "作品标签快照格式无效：count 与实际标签数量不一致"
-    info["tag_count"] = len(tags)
+    if payload.get("count") is not None and declared_count != len(tags):
+        return None, info, "作品标签快照格式无效：count 与实际标签数量不一致"
+    info.update({"tag_count": len(tags), "source": _snapshot_source(payload.get("source"))})
     return tags, info, None
+
+
+def _validate_history_images(
+    value: Any,
+    base_dir: Path | None,
+    errors: list[str],
+    *,
+    allowed_root: Path | None = None,
+    validate_content: bool = True,
+) -> list[dict[str, Any]]:
+    if value in (None, "", []):
+        return []
+    items = list(value) if isinstance(value, (list, tuple)) else [value]
+    if not 1 <= len(items) <= 10:
+        errors.append("历史成绩证明须为 1—10 张图片")
+    results: list[dict[str, Any]] = []
+    for index, item in enumerate(items, start=1):
+        info: dict[str, Any] = {"index": index}
+        before = len(errors)
+        _validate_cover(
+            item,
+            base_dir,
+            errors,
+            info,
+            allowed_root=allowed_root,
+            label="历史成绩证明",
+            validate_content=validate_content,
+        )
+        if len(errors) > before:
+            errors[before:] = [f"历史成绩证明第 {index} 张：{message}" for message in errors[before:]]
+        results.append(info)
+    return results
+
+
+def _load_wawa_source_module() -> Any:
+    """加载同插件中的离线快照模块；独立复制 submission Skill 时允许缺失。"""
+
+    source_path = Path(__file__).resolve().parents[1].parent / "wawa-source" / "scripts" / "wawa_snapshot.py"
+    if not source_path.is_file():
+        raise FileNotFoundError("未找到 wawa-source 快照模块")
+    spec = importlib.util.spec_from_file_location("wawa_source_snapshot_for_submission", source_path)
+    if spec is None or spec.loader is None:
+        raise ImportError("无法加载 wawa-source 快照模块")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _consume_wawa_snapshot(
+    snapshot: Mapping[str, Any] | str | Path | None,
+    snapshot_path: str | Path | None,
+    *,
+    base_dir: Path | None,
+    now: dt.datetime | str | None = None,
+) -> dict[str, Any]:
+    """消费可选的本地脱敏统计快照，不把统计数据当作投稿事实。"""
+
+    provided = snapshot is not None or snapshot_path is not None
+    info: dict[str, Any] = {
+        "provided": provided,
+        "status": "未提供" if not provided else "invalid",
+        "freshness": "未提供" if not provided else "invalid",
+        "errors": [],
+        "warnings": [],
+    }
+    if not provided:
+        return info
+    if snapshot is not None and snapshot_path is not None:
+        info["errors"] = ["snapshot 与 snapshot_path 不能同时提供"]
+        info["warnings"] = ["统计快照无效，未消费；投稿预检未使用统计数据"]
+        return info
+    try:
+        source_module = _load_wawa_source_module()
+        raw: Mapping[str, Any]
+        display_path: str | None = None
+        if snapshot_path is not None:
+            path = _resolve_path(snapshot_path, base_dir)
+            if path is None:
+                raise ValueError("快照路径为空")
+            display_path = _display_path(path, base_dir)
+            with path.open("r", encoding="utf-8") as handle:
+                value = json.load(handle)
+            if not isinstance(value, Mapping):
+                raise ValueError("快照 JSON 须为对象")
+            raw = value
+        elif isinstance(snapshot, Mapping):
+            raw = snapshot
+        else:
+            path = _resolve_path(snapshot, base_dir)
+            if path is None:
+                raise ValueError("快照路径为空")
+            display_path = _display_path(path, base_dir)
+            with path.open("r", encoding="utf-8") as handle:
+                value = json.load(handle)
+            if not isinstance(value, Mapping):
+                raise ValueError("快照 JSON 须为对象")
+            raw = value
+        report = source_module.validate_snapshot(raw, now)
+        if not report.get("ok"):
+            info.update({"status": "invalid", "freshness": "invalid", "errors": list(report.get("errors") or [])})
+            info["warnings"] = ["统计快照无效，未消费；投稿预检未使用统计数据"]
+            if display_path:
+                info["path"] = display_path
+            return info
+        normalised = source_module.normalize_snapshot(raw)
+        info.update(
+            {
+                "status": report.get("status"),
+                "freshness": report.get("freshness"),
+                "captured_at": report.get("captured_at"),
+                "expires_at": report.get("expires_at"),
+                "stale_after": report.get("expires_at"),
+                "ttl_days": report.get("ttl_days"),
+                "source": {"kind": normalised["source"]["kind"], "label": "本地脱敏快照"},
+                "work_count": report.get("work_count", 0),
+            }
+        )
+        if display_path:
+            info["path"] = display_path
+        if report.get("status") == "fresh":
+            info["aggregate"] = source_module.aggregate_snapshot(normalised)
+            info["warnings"] = ["统计来自本地脱敏快照，不代表蛙蛙页面实时数据；未用于补充或覆盖投稿字段"]
+        else:
+            info["warnings"] = ["统计快照已过期，未消费其聚合值；当前结果未实时复核"]
+        return info
+    except Exception as exc:  # noqa: BLE001 - 可选数据源失败不能阻断材料校验
+        info["errors"] = [f"无法读取统计快照: {exc}"]
+        info["warnings"] = ["统计快照无效，未消费；投稿预检未使用统计数据"]
+        return info
 
 
 def validate_submission(
@@ -542,33 +835,48 @@ def validate_submission(
     manuscript: str | Path | Mapping[str, Any] | None = None,
     project_root: str | Path | None = None,
     base_dir: str | Path | None = None,
+    snapshot: Mapping[str, Any] | str | Path | None = None,
+    snapshot_path: str | Path | None = None,
+    snapshot_now: dt.datetime | str | None = None,
     category_snapshot: str | Path | None = None,
     tag_snapshot: str | Path | None = None,
 ) -> dict[str, Any]:
-    """校验元数据及可选稿件，返回可序列化的结果字典。
+    """校验独立稿件或 Novel Studio 集成项目。
 
-    ``manuscript`` 和 ``project_root`` 是 CLI 参数的显式输入；若未提供稿件，
-    才会回退到元数据中的投稿文件路径。路径默认相对 ``base_dir`` 解析。分类与
-    标签默认使用 Skill 内置固定快照；调用方可通过对应参数显式替换快照。
+    无 ``schema_version`` 和版本 1 保持旧版材料预检语义；版本 2 对包类型、
+    页面工作流、活动和 v2 业务字段启用严格门禁，并把字数作为提示信息，
+    不因超出活动建议范围而阻断页面预填。
     """
 
+    if not isinstance(metadata, Mapping):
+        return {"ok": False, "errors": ["元数据 JSON 须为对象"], "blockers": [], "warnings": [], "mode": "independent"}
     errors: list[str] = []
     blockers: list[str] = []
     warnings: list[str] = []
-    if not isinstance(metadata, Mapping):
-        return {
-            "ok": False,
-            "errors": ["元数据 JSON 须为对象"],
-            "blockers": [],
-            "warnings": [],
-        }
+    root = Path(base_dir).expanduser().resolve(strict=False) if base_dir else None
+    project_boundary = Path(project_root).expanduser().resolve(strict=False) if project_root is not None else None
+    mode = "integrated" if project_root is not None else "independent"
+    rules = _rule_cache_status()
+    snapshot_info = _consume_wawa_snapshot(snapshot, snapshot_path, base_dir=root, now=snapshot_now)
+    if snapshot_info["provided"]:
+        warnings.extend(snapshot_info.get("warnings") or [])
+    if mode == "independent":
+        warnings.append("独立模式仅完成本地材料预检，不代表平台接受、签约或提交成功")
+
     schema_version = metadata.get("schema_version")
+    valid_schema_version = (
+        isinstance(schema_version, int)
+        and not isinstance(schema_version, bool)
+        and schema_version in {1, 2}
+    )
+    is_v2 = valid_schema_version and schema_version == 2
+    file_root = project_boundary if is_v2 and project_boundary is not None else root
+    if schema_version is not None and not valid_schema_version:
+        errors.append("投稿包 schema_version 仅支持 1 或 2")
     package_type = _clean_text(metadata.get("type"))
     workflow = metadata.get("workflow")
     campaign = metadata.get("campaign")
-    if schema_version is not None:
-        if schema_version != 2:
-            errors.append("执行就绪投稿包 schema_version 必须为 2")
+    if is_v2:
         if package_type != "wawa-submission-package":
             errors.append("执行就绪投稿包 type 必须为 wawa-submission-package")
         if not isinstance(workflow, Mapping):
@@ -585,21 +893,38 @@ def validate_submission(
                 errors.append("campaign.name 不能为空")
             if _clean_text(campaign.get("match_mode")) != "exact":
                 errors.append("campaign.match_mode 必须为 exact")
-    root = Path(base_dir).expanduser().resolve() if base_dir else None
+            if "code" in campaign and not isinstance(campaign.get("code"), str):
+                errors.append("campaign.code 必须为字符串")
 
     title = _clean_text(_lookup(metadata, FIELD_ALIASES["title"]))
     pen_name = _clean_text(_lookup(metadata, FIELD_ALIASES["pen_name"]))
     summary = _clean_text(_lookup(metadata, FIELD_ALIASES["summary"]))
     channel = _normalise_channel(_lookup(metadata, FIELD_ALIASES["channel"]))
     status = _normalise_status(_lookup(metadata, FIELD_ALIASES["status"]))
+    raw_categories = _lookup(metadata, FIELD_ALIASES["categories"])
+    raw_tags = _lookup(metadata, FIELD_ALIASES["tags"])
+    raw_custom_tags = _lookup(metadata, FIELD_ALIASES["custom_tags"])
     categories = _normalise_categories(metadata)
-    tags = _normalise_tags(_lookup(metadata, FIELD_ALIASES["tags"]))
-    custom_tags = _normalise_tags(_lookup(metadata, FIELD_ALIASES["custom_tags"]))
-
+    tags = _normalise_tags(raw_tags)
+    custom_tags = _as_items(raw_custom_tags)
+    entry_category = _clean_text(metadata.get("category"))
+    if is_v2:
+        if not isinstance(raw_categories, list):
+            errors.append("v2 投稿包 categories 必须为数组")
+        if not isinstance(raw_tags, list):
+            errors.append("v2 投稿包 tags 必须为数组")
+        if raw_custom_tags is not None and not isinstance(raw_custom_tags, list):
+            errors.append("v2 投稿包 custom_tags 必须为数组")
     category_paths, category_snapshot_info, category_snapshot_error = _load_category_snapshot(
-        category_snapshot
+        category_snapshot,
+        base_dir=root,
+        strict_metadata=not is_v2,
     )
-    tag_values, tag_snapshot_info, tag_snapshot_error = _load_tag_snapshot(tag_snapshot)
+    tag_values, tag_snapshot_info, tag_snapshot_error = _load_tag_snapshot(
+        tag_snapshot,
+        base_dir=root,
+        strict_metadata=not is_v2,
+    )
     if category_snapshot_error:
         category_snapshot_info["error"] = category_snapshot_error
         errors.append(category_snapshot_error)
@@ -613,29 +938,20 @@ def validate_submission(
         "channel_root_valid": None,
     }
     tag_taxonomy: dict[str, Any] = {"provided": tags, "valid": None, "unknown": []}
-
-    if not title:
-        blockers.append("作品名称不能为空")
-    elif len(title) > MAX_TITLE_LENGTH:
-        errors.append(f"作品名称长度不能超过 {MAX_TITLE_LENGTH} 字符")
-    if not pen_name:
-        blockers.append("笔名不能为空")
-    elif len(pen_name) > MAX_PEN_NAME_LENGTH:
-        errors.append(f"笔名长度不能超过 {MAX_PEN_NAME_LENGTH} 字符")
-    if not summary or summary == "暂无简介":
-        blockers.append("作品简介必须填写正式内容，不能留空或使用“暂无简介”占位")
-    elif len(summary) > MAX_SUMMARY_LENGTH:
-        errors.append(f"简介长度不能超过 {MAX_SUMMARY_LENGTH} 字符")
-    if not channel:
-        blockers.append("频道尚未确认，须选择男频、女频或全频")
-    elif channel not in ALLOWED_CHANNELS:
-        errors.append(f"频道必须为男频、女频或全频，当前为 {channel or '空'}")
-    if not status:
-        blockers.append("作品状态尚未确认，须按事实选择连载或完结")
-    elif status not in ALLOWED_STATUSES:
-        errors.append(f"状态必须为连载或完结，当前为 {status or '空'}")
-    if not categories:
-        blockers.append("后台三级类目尚未确认，须从当前页面选择 3 项")
+    title_limit = V2_MAX_TITLE_LENGTH if is_v2 else MAX_TITLE_LENGTH
+    if not title: blockers.append("作品名称不能为空")
+    elif len(title) > title_limit: errors.append(f"作品名称长度不能超过 {title_limit} 字符")
+    if not pen_name: blockers.append("笔名不能为空")
+    elif len(pen_name) > MAX_PEN_NAME_LENGTH: errors.append(f"笔名长度不能超过 {MAX_PEN_NAME_LENGTH} 字符")
+    if not summary or summary == "暂无简介": blockers.append("作品简介必须填写正式内容，不能留空或使用“暂无简介”占位")
+    elif len(summary) > MAX_SUMMARY_LENGTH: errors.append(f"简介长度不能超过 {MAX_SUMMARY_LENGTH} 字符")
+    if not channel: blockers.append("频道尚未确认，须选择男频、女频或全频")
+    elif channel not in ALLOWED_CHANNELS: errors.append(f"频道必须为男频、女频或全频，当前为 {channel}")
+    if not status: blockers.append("作品状态尚未确认，须按事实选择连载或完结")
+    elif status not in ALLOWED_STATUSES: errors.append(f"状态必须为连载或完结，当前为 {status}")
+    if is_v2 and entry_category not in ALLOWED_ENTRY_CATEGORIES:
+        errors.append("category 必须为短篇或长篇")
+    if not categories: blockers.append("后台三级类目尚未确认，须从当前页面选择 3 项")
     elif len(categories) != 3 or any(not item for item in categories):
         errors.append(f"三级类目必须恰好填写 3 项，当前为 {len(categories)} 项")
     elif category_paths is not None:
@@ -643,49 +959,72 @@ def validate_submission(
         category_taxonomy["matched_path"] = list(category_path)
         category_taxonomy["valid"] = category_path in category_paths
         if category_path not in category_paths:
-            errors.append("三级类目不在固定作品分类快照中，须精确填写“根分类 / 一级类目 / 二级类目”完整路径")
+            errors.append("三级类目不在固定作品分类快照中，须精确填写完整三级路径")
         if channel in {"男频", "女频"}:
             category_taxonomy["channel_root_valid"] = category_path[0] == channel
             if category_path[0] != channel:
                 errors.append(f"{channel}频道只能选择以“{channel}”为根的三级类目")
         elif channel == "全频":
-            category_taxonomy["channel_root_valid"] = category_path[0] in {
-                item[0] for item in category_paths
-            }
-    if not tags:
-        blockers.append("至少填写 1 个标签")
+            category_taxonomy["channel_root_valid"] = category_path[0] in {item[0] for item in category_paths}
+    if not tags: blockers.append("至少填写 1 个标签")
+    elif len(tags) > MAX_TAGS:
+        errors.append(f"作品标签最多填写 {MAX_TAGS} 个")
+    elif len(set(tags)) != len(tags):
+        errors.append("作品标签不能重复")
     elif tag_values is not None:
         unknown_tags = [tag for tag in tags if tag not in tag_values]
         tag_taxonomy["unknown"] = unknown_tags
         tag_taxonomy["valid"] = not unknown_tags
         if unknown_tags:
             errors.append("作品标签不在固定标签库中: " + "、".join(unknown_tags))
+    if len(custom_tags) > MAX_CUSTOM_TAGS:
+        errors.append(f"自定义标签最多填写 {MAX_CUSTOM_TAGS} 个")
+    if len(set(custom_tags)) != len(custom_tags):
+        errors.append("自定义标签不能重复")
+    custom_tag_limit = V2_MAX_CUSTOM_TAG_LENGTH if is_v2 else MAX_CUSTOM_TAG_LENGTH
     for tag in custom_tags:
-        if len(tag) > MAX_CUSTOM_TAG_LENGTH:
-            errors.append(f"自定义标签“{tag}”长度不能超过 {MAX_CUSTOM_TAG_LENGTH} 字符")
+        if len(tag) > custom_tag_limit:
+            errors.append(f"自定义标签“{tag}”长度不能超过 {custom_tag_limit} 字符")
+    if is_v2 and custom_tags:
+        warnings.append("页面引擎还会按当前活动配置确认是否允许创建自定义标签")
 
     cover_info: dict[str, Any] = {}
     cover_value = _lookup(metadata, FIELD_ALIASES["cover"])
-    if cover_value in (None, ""):
-        blockers.append("缺少作品封面")
+    declared_manuscript_value = _lookup(metadata, FIELD_ALIASES["manuscript"])
+    if is_v2:
+        for field_name, field_value in (("cover", cover_value), ("manuscript", declared_manuscript_value)):
+            path_text = _path_text(field_value)
+            if not path_text:
+                blockers.append(f"v2 投稿包缺少 {field_name} 路径")
+            elif not Path(path_text).expanduser().is_absolute():
+                errors.append(f"v2 投稿包 {field_name} 路径必须为绝对路径")
+    if cover_value in (None, ""): blockers.append("缺少作品封面")
     else:
-        _validate_cover(cover_value, root, errors, cover_info)
-
+        _validate_cover(cover_value, root, errors, cover_info, allowed_root=file_root)
     history_images = _validate_history_images(
         _lookup(metadata, FIELD_ALIASES["history_achievement_images"]),
         root,
         errors,
+        allowed_root=file_root,
     )
 
     manuscript_info: dict[str, Any] = {}
-    manuscript_value = manuscript
-    if manuscript_value is None:
-        manuscript_value = _lookup(metadata, FIELD_ALIASES["manuscript"])
-    if manuscript_value in (None, "") and project_root is None:
+    manuscript_value = manuscript if manuscript is not None else declared_manuscript_value
+    has_manuscript = manuscript_value not in (None, "")
+    if not has_manuscript and project_root is None:
         blockers.append("缺少正文来源：须提供投稿文件或 Novel Studio 项目目录")
-        manuscript_text = None
-    else:
-        manuscript_text = _validate_manuscript(manuscript_value, root, errors, manuscript_info)
+    manuscript_text = (
+        _validate_manuscript(
+            manuscript_value,
+            root,
+            errors,
+            blockers,
+            manuscript_info,
+            allowed_root=file_root,
+        )
+        if has_manuscript
+        else None
+    )
 
     project_info: dict[str, Any] | None = None
     project_text_count: int | None = None
@@ -694,17 +1033,16 @@ def validate_submission(
         errors.extend(project_info["errors"])
         warnings.extend(project_info["warnings"])
         project_text_count = project_info.get("word_count")
+        if project_text_count is None and not has_manuscript and not is_v2:
+            blockers.append("项目正文为空或无法读取，不能仅凭元数据声明字数通过预检")
 
-    # 字数优先级：可读的 CLI/元数据 TXT > 项目正文 > 元数据声明值。
     word_count: int | None = None
     word_source = ""
     if manuscript_text is not None:
-        word_count = _count_text_units(manuscript_text)
-        word_source = "manuscript"
+        word_count, word_source = _count_text_units(manuscript_text), "manuscript"
     elif project_text_count is not None:
-        word_count = int(project_text_count)
-        word_source = "project"
-    else:
+        word_count, word_source = int(project_text_count), "project"
+    elif is_v2:
         declared = _lookup(metadata, FIELD_ALIASES["word_count"])
         if declared not in (None, ""):
             word_count = _int_value(declared)
@@ -712,14 +1050,38 @@ def validate_submission(
             if word_count is None or word_count < 0:
                 errors.append("字数必须为不小于 0 的整数")
                 word_count = None
-
+    elif project_root is None and not has_manuscript:
+        declared = _lookup(metadata, FIELD_ALIASES["word_count"])
+        if declared not in (None, ""):
+            errors.append("未提供可验证正文，不能使用声明字数替代稿件")
     if word_count is not None:
-        warnings.append(f"本地估算字数约 {word_count}，只供展示；最终以蛙蛙页面解析和提示为准，不阻断预填")
-    else:
+        if word_source in {"manuscript", "project"}:
+            warnings.append("本地字数仅为预检估算，最终以蛙蛙页面解析字数为准")
+        if is_v2:
+            warnings.append("v2 字数仅供展示，不阻断预填；最终以蛙蛙页面解析和提示为准")
+        public_rule = rules["public_signing_guidance"]
+        historical_rule = rules["historical_form_observation"]
+        if word_count < PUBLIC_SIGNING_GUIDANCE:
+            warnings.append(
+                f"当前公开投稿页提示长篇约 10 万字方可正式签约；当前本地估算约 {word_count} 字。"
+                f"该提示不是签约保证；规则状态：{public_rule['verification_status']}。"
+            )
+        historical_threshold = (
+            HISTORICAL_ONGOING_OBSERVATION if status == "连载" else HISTORICAL_COMPLETED_OBSERVATION
+        )
+        if status in ALLOWED_STATUSES and word_count < historical_threshold:
+            warnings.append(
+                f"历史页面快照曾观察到{status}作品约 {historical_threshold} 字的状态校验；"
+                f"规则状态：{historical_rule['verification_status']}，不能作为当前阻断或平台保证。"
+            )
+    elif is_v2:
         warnings.append("未提供可计算的本地字数；上传后读取蛙蛙页面解析结果，不阻断预填")
+    elif status in ALLOWED_STATUSES and not any("无法可靠解析" in item for item in blockers):
+        blockers.append("未提供可计算的稿件字数，无法完成材料预检")
 
     result: dict[str, Any] = {
         "ok": not errors and not blockers,
+        "mode": mode,
         "errors": errors,
         "blockers": blockers,
         "warnings": warnings,
@@ -735,6 +1097,7 @@ def validate_submission(
             "tags": tags,
             "custom_tags": custom_tags,
             "campaign": dict(campaign) if isinstance(campaign, Mapping) else None,
+            "category": entry_category or None,
             "workflow": dict(workflow) if isinstance(workflow, Mapping) else None,
         },
         "cover": cover_info,
@@ -742,44 +1105,49 @@ def validate_submission(
         "manuscript": manuscript_info,
         "word_count": word_count,
         "word_count_source": word_source or None,
+        "rules": rules,
+        "page_verification": {
+            "verified_at": None,
+            "page_status": "未实时复核",
+            "parsed_word_count": None,
+            "actual_message": None,
+        },
+        "wawa_snapshot": snapshot_info,
         "taxonomy": {
+            "policy": "strict-v1",
             "category_snapshot": category_snapshot_info,
             "tag_snapshot": tag_snapshot_info,
             "categories": category_taxonomy,
             "tags": tag_taxonomy,
         },
     }
-    if project_info is not None:
-        result["project"] = project_info
+    if project_info is not None: result["project"] = project_info
     return result
 
 
 def _load_metadata(path: Path) -> Mapping[str, Any]:
     with path.open("r", encoding="utf-8") as handle:
         value = json.load(handle)
-    if not isinstance(value, Mapping):
-        raise ValueError("元数据 JSON 须为对象")
+    if not isinstance(value, Mapping): raise ValueError("元数据 JSON 须为对象")
     return value
 
 
 def _human_output(result: Mapping[str, Any]) -> str:
     lines = ["结果: 通过" if result.get("ok") else "结果: 未通过"]
-    for label in ("errors", "blockers", "warnings"):
+    for label, heading in (("errors", "错误:"), ("blockers", "阻断:"), ("warnings", "警告:")):
         values = result.get(label) or []
-        if values:
-            headings = {"errors": "错误:", "blockers": "阻断:", "warnings": "警告:"}
-            lines.append(headings[label])
-            lines.extend(f"- {item}" for item in values)
-    if result.get("word_count") is not None:
-        lines.append(f"字数: {result['word_count']}")
+        if values: lines.extend([heading, *[f"- {item}" for item in values]])
+    if result.get("word_count") is not None: lines.append(f"字数: {result['word_count']}")
     return "\n".join(lines)
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="蛙蛙执行就绪投稿包、稿件和固定字段预检")
+    parser = argparse.ArgumentParser(description="蛙蛙投稿元数据、稿件及字数门槛预检")
     parser.add_argument("--metadata", required=True, help="投稿元数据 JSON 文件")
     parser.add_argument("--project-root", help="可选 Novel Studio 项目目录")
     parser.add_argument("--manuscript", help="可选投稿稿件（.doc/.docx/.txt）")
+    parser.add_argument("--snapshot", "--snapshot-path", dest="snapshot_path", help="可选本地蛙蛙统计快照 JSON；只读、过期即标记")
+    parser.add_argument("--snapshot-now", help="可选快照 TTL 判断时间（带时区），主要用于离线测试")
     parser.add_argument("--category-snapshot", help="可选作品分类快照 JSON，默认使用内置固定快照")
     parser.add_argument("--tag-snapshot", help="可选作品标签快照 JSON，默认使用内置固定快照")
     parser.add_argument("--json", action="store_true", help="以 JSON 输出结果")
@@ -788,7 +1156,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    metadata_path = Path(args.metadata).expanduser().resolve()
+    metadata_path = Path(args.metadata).expanduser().resolve(strict=False)
     try:
         metadata = _load_metadata(metadata_path)
         result = validate_submission(
@@ -796,20 +1164,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             manuscript=args.manuscript,
             project_root=args.project_root,
             base_dir=metadata_path.parent,
+            snapshot_path=args.snapshot_path,
+            snapshot_now=args.snapshot_now,
             category_snapshot=args.category_snapshot,
             tag_snapshot=args.tag_snapshot,
         )
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
-        result = {
-            "ok": False,
-            "errors": [f"无法读取元数据: {exc}"],
-            "blockers": [],
-            "warnings": [],
-        }
-    if args.json:
-        print(json.dumps(result, ensure_ascii=False, indent=2))
-    else:
-        print(_human_output(result))
+        result = {"ok": False, "mode": "independent", "errors": [f"无法读取元数据: {exc}"], "blockers": [], "warnings": []}
+    print(json.dumps(result, ensure_ascii=False, indent=2) if args.json else _human_output(result))
     return 0 if result.get("ok") else 1
 
 

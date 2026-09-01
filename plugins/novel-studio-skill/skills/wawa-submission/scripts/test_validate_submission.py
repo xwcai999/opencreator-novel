@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import base64
 import json
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 from validate_submission import (
@@ -16,12 +18,17 @@ from validate_submission import (
 )
 
 
+PNG_1X1 = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+)
+
+
 class ValidateSubmissionTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp_dir = tempfile.TemporaryDirectory()
         self.root = Path(self.temp_dir.name)
-        self.cover = self.root / "cover.jpg"
-        self.cover.write_bytes(b"cover")
+        self.cover = self.root / "cover.png"
+        self.cover.write_bytes(PNG_1X1)
         self.manuscript = self.root / "manuscript.txt"
         self.manuscript.write_text("字" * 20_000, encoding="utf-8")
 
@@ -37,10 +44,12 @@ class ValidateSubmissionTests(unittest.TestCase):
             "summary": "简介",
             "channel": "男频",
             "status": "连载",
+            "category": "长篇",
             "categories": ["男频", "玄幻奇幻", "东方玄幻"],
             "tags": ["热血"],
             "custom_tags": ["热血"],
             "cover": str(self.cover),
+            "manuscript": str(self.manuscript),
             "word_count": 20_000,
             "campaign": {
                 "name": "第一届「退款与退场」微观情感叙事大赛",
@@ -48,6 +57,31 @@ class ValidateSubmissionTests(unittest.TestCase):
                 "code": "",
             },
             "workflow": {"mode": "page_prefill", "final_submit": "human_only"},
+        }
+        value.update(overrides)
+        return value
+
+    def snapshot(self, **overrides: object) -> dict[str, object]:
+        value: dict[str, object] = {
+            "schema_version": "wawa.stats.v1",
+            "captured_at": "2026-08-18T12:00:00+08:00",
+            "ttl_days": 7,
+            "source": {"kind": "synthetic-fixture", "label": "合成测试"},
+            "works": [
+                {
+                    "work_id": "remote-work-001",
+                    "title": "不应被投稿预检读取的作品名",
+                    "metrics": {
+                        "chapters": 3,
+                        "words": 1_000,
+                        "followers": 20,
+                        "total_revenue": 1.5,
+                    },
+                    "series": [
+                        {"date": "2026-08-18", "followers": 20, "revenue": 1.5}
+                    ],
+                }
+            ],
         }
         value.update(overrides)
         return value
@@ -195,7 +229,7 @@ class ValidateSubmissionTests(unittest.TestCase):
                 status="未知",
                 categories=["只有", "两项"],
                 tags=[],
-                custom_tags=["超长自定义标签123456"],
+                custom_tags=["超" * 31],
             )
         )
         self.assertFalse(result["ok"])
@@ -233,16 +267,83 @@ class ValidateSubmissionTests(unittest.TestCase):
         self.assertFalse(invalid_campaign["ok"])
         self.assertIn("match_mode 必须为 exact", "\n".join(invalid_campaign["errors"]))
 
-    def test_legacy_flat_metadata_remains_compatible(self) -> None:
+        invalid_campaign_code = validate_submission(
+            self.metadata(campaign={"name": "目标活动", "match_mode": "exact", "code": 123}),
+            manuscript=self.manuscript,
+        )
+        self.assertFalse(invalid_campaign_code["ok"])
+        self.assertIn("campaign.code 必须为字符串", "\n".join(invalid_campaign_code["errors"]))
+
+        long_v2_title = validate_submission(
+            self.metadata(title="长" * 81), manuscript=self.manuscript
+        )
+        self.assertFalse(long_v2_title["ok"])
+        self.assertIn("不能超过 80 字符", "\n".join(long_v2_title["errors"]))
+
+        invalid_category = validate_submission(
+            self.metadata(category="玄幻奇幻"), manuscript=self.manuscript
+        )
+        self.assertFalse(invalid_category["ok"])
+        self.assertIn("category 必须为短篇或长篇", "\n".join(invalid_category["errors"]))
+
+        relative_paths = validate_submission(
+            self.metadata(cover="cover.png", manuscript="manuscript.txt"),
+            manuscript=self.manuscript,
+            base_dir=self.root,
+        )
+        self.assertFalse(relative_paths["ok"])
+        self.assertIn("路径必须为绝对路径", "\n".join(relative_paths["errors"]))
+
+    def test_schema_version_matrix_preserves_legacy_and_enforces_v2(self) -> None:
         legacy = self.metadata()
         for key in ("schema_version", "type", "campaign", "workflow"):
             legacy.pop(key)
         result = validate_submission(legacy, manuscript=self.manuscript)
-        self.assertTrue(result["ok"])
+        self.assertTrue(result["ok"], result)
+        self.assertIsNone(result["metadata"]["schema_version"])
+
+        v1_metadata = self.metadata(schema_version=1)
+        for key in ("type", "campaign", "workflow"):
+            v1_metadata.pop(key)
+        v1 = validate_submission(v1_metadata, manuscript=self.manuscript)
+        self.assertTrue(v1["ok"], v1)
+        self.assertEqual(v1["metadata"]["schema_version"], 1)
+
+        missing_workflow = self.metadata()
+        missing_workflow.pop("workflow")
+        v2 = validate_submission(missing_workflow, manuscript=self.manuscript)
+        self.assertFalse(v2["ok"])
+        self.assertIn("workflow", "\n".join(v2["errors"]))
+
+    def test_legacy_metadata_accepts_real_cover_and_docx(self) -> None:
+        docx = self.root / "manuscript.docx"
+        content_types = (
+            '<?xml version="1.0"?>'
+            '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>'
+        )
+        document = (
+            '<?xml version="1.0"?>'
+            '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+            '<w:body><w:p><w:r><w:t>'
+            + ("字" * 20_000)
+            + "</w:t></w:r></w:p></w:body></w:document>"
+        )
+        with zipfile.ZipFile(docx, "w") as archive:
+            archive.writestr("[Content_Types].xml", content_types)
+            archive.writestr("word/document.xml", document)
+
+        legacy = self.metadata()
+        for key in ("schema_version", "type", "campaign", "workflow"):
+            legacy.pop(key)
+        result = validate_submission(legacy, manuscript=docx)
+        self.assertTrue(result["ok"], result)
+        self.assertEqual(result["cover"]["extension"], ".png")
+        self.assertEqual(result["manuscript"]["parse_status"], "parsed")
+        self.assertEqual(result["word_count"], 20_000)
 
     def test_required_cover_manuscript_and_summary(self) -> None:
         result = validate_submission(
-            self.metadata(cover="", summary=""),
+            self.metadata(cover="", manuscript="", summary=""),
         )
         self.assertFalse(result["ok"])
         joined = "\n".join(result["blockers"])
@@ -252,7 +353,7 @@ class ValidateSubmissionTests(unittest.TestCase):
 
     def test_history_achievement_images(self) -> None:
         history = self.root / "history.png"
-        history.write_bytes(b"proof")
+        history.write_bytes(PNG_1X1)
         result = validate_submission(
             self.metadata(history_achievement_images=[str(history)]),
             manuscript=self.manuscript,
@@ -319,9 +420,46 @@ class ValidateSubmissionTests(unittest.TestCase):
         self.assertNotIn("设定/private.txt", result["read_files"])
         self.assertIn("报告/章节审查/review.md", result["report_files"])
 
+    def test_cover_path_escape_is_rejected_at_boundary(self) -> None:
+        outside = self.root.parent / f"{self.root.name}-outside.png"
+        try:
+            outside.write_bytes(PNG_1X1)
+            result = validate_submission(
+                self.metadata(cover=f"../{outside.name}"),
+                manuscript=self.manuscript,
+                base_dir=self.root,
+            )
+            self.assertFalse(result["ok"])
+            self.assertIn("路径越界", "\n".join(result["errors"]))
+        finally:
+            outside.unlink(missing_ok=True)
+
+    @unittest.skipUnless(hasattr(os, "symlink"), "symlink unsupported")
+    def test_project_adapter_rejects_external_symlink(self) -> None:
+        project = self.root / "project"
+        body = project / "正文"
+        body.mkdir(parents=True)
+        outside = self.root / "outside.md"
+        link = body / "linked.md"
+        try:
+            outside.write_text("不应读取", encoding="utf-8")
+            try:
+                link.symlink_to(outside)
+            except OSError:
+                self.skipTest("symlink creation unavailable")
+            result = validate_project_adapter(project)
+            self.assertFalse(result["ok"])
+            self.assertIn("正文路径越界", "\n".join(result["errors"]))
+            self.assertNotIn("正文/linked.md", result["read_files"])
+        finally:
+            link.unlink(missing_ok=True)
+            outside.unlink(missing_ok=True)
+
     def test_cli_json_output(self) -> None:
         metadata_path = self.root / "metadata.json"
         metadata_path.write_text(json.dumps(self.metadata(), ensure_ascii=False), encoding="utf-8")
+        snapshot_path = self.root / "snapshot.json"
+        snapshot_path.write_text(json.dumps(self.snapshot(), ensure_ascii=False), encoding="utf-8")
         script = Path(__file__).with_name("validate_submission.py")
         completed = subprocess.run(
             [
@@ -331,6 +469,10 @@ class ValidateSubmissionTests(unittest.TestCase):
                 str(metadata_path),
                 "--manuscript",
                 str(self.manuscript),
+                "--snapshot",
+                str(snapshot_path),
+                "--snapshot-now",
+                "2026-08-18T13:00:00+08:00",
                 "--json",
             ],
             capture_output=True,
@@ -341,7 +483,29 @@ class ValidateSubmissionTests(unittest.TestCase):
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         payload = json.loads(completed.stdout)
-        self.assertTrue(payload["ok"])
+        self.assertTrue(payload["ok"], payload)
+        for key in ("mode", "rules", "page_verification", "wawa_snapshot"):
+            self.assertIn(key, payload)
+        self.assertEqual(payload["mode"], "independent")
+        self.assertEqual(payload["page_verification"]["page_status"], "未实时复核")
+        self.assertEqual(payload["wawa_snapshot"]["status"], "fresh")
+        self.assertEqual(payload["wawa_snapshot"]["aggregate"]["totals"]["words"], 1_000)
+
+    def test_snapshot_path_api_preserves_submission_fields(self) -> None:
+        snapshot_path = self.root / "snapshot-api.json"
+        snapshot_path.write_text(json.dumps(self.snapshot(), ensure_ascii=False), encoding="utf-8")
+        result = validate_submission(
+            self.metadata(),
+            manuscript=self.manuscript,
+            base_dir=self.root,
+            snapshot_path=snapshot_path,
+            snapshot_now="2026-08-18T13:00:00+08:00",
+        )
+        self.assertTrue(result["ok"], result)
+        self.assertEqual(result["wawa_snapshot"]["status"], "fresh")
+        self.assertEqual(result["wawa_snapshot"]["aggregate"]["totals"]["words"], 1_000)
+        self.assertEqual(result["metadata"]["title"], "一部合规作品")
+        self.assertNotIn("remote-work-001", json.dumps(result["wawa_snapshot"], ensure_ascii=False))
 
     def test_cli_snapshot_overrides(self) -> None:
         category_snapshot = self.root / "categories.json"
@@ -405,10 +569,8 @@ class ValidateSubmissionTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stderr)
         payload = json.loads(completed.stdout)
         self.assertTrue(payload["ok"])
-        self.assertEqual(payload["taxonomy"]["tag_snapshot"]["path"], str(tag_snapshot.resolve()))
+        self.assertEqual(payload["taxonomy"]["tag_snapshot"]["path"], "tags.json")
 
 
 if __name__ == "__main__":
     unittest.main()
-
-
