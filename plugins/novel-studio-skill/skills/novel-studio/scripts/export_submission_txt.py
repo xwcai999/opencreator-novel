@@ -55,8 +55,10 @@ def export_submission_txt(
     output_path = ensure_within(root, output_path)
     if output_path.suffix.lower() != ".txt":
         raise ValueError("输出文件扩展名必须为 .txt")
-    protected = {root / "正文", root / "作品.md", root / "当前状态.md"}
-    if any(output_path == item or item in output_path.parents for item in protected):
+    output_key = os.path.normcase(str(output_path))
+    protected = {os.path.normcase(str(root / item)) for item in ("正文", "作品.md", "当前状态.md")}
+    body_prefix = os.path.normcase(str(root / "正文")) + os.sep
+    if output_key in protected or output_key.startswith(body_prefix):
         raise ValueError("输出路径不得位于正文目录，也不得覆盖权威项目文件")
     body_root = root / "正文"
     errors: list[str] = []
