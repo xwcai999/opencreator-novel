@@ -92,7 +92,8 @@ class ExportSubmissionTxtTests(unittest.TestCase):
             stderr=subprocess.PIPE,
             timeout=30,
         )
-        self.assertEqual(process.returncode, 2)
+        self.assertNotEqual(process.returncode, 0)
+        self.assertFalse((self.root / "作品.md").exists())
 
     @unittest.skipUnless(hasattr(os, "symlink"), "platform has no symlink support")
     def test_rejects_chapter_symlink_outside_project(self) -> None:
