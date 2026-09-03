@@ -118,6 +118,47 @@ class WawaSubmissionTests(unittest.TestCase):
         self.assertEqual(result["word_count_source"], "manuscript")
         self.assertEqual(result["manuscript"]["path"], "book.txt")
         self.assertNotIn(str(self.root), json.dumps(result, ensure_ascii=False))
+
+    def v2_metadata(self) -> dict[str, object]:
+        return self.metadata(
+            schema_version=2,
+            type="wawa-submission-package",
+            category="长篇",
+            workflow={"mode": "page_prefill", "final_submit": "human_only"},
+            campaign={"name": "测试活动", "match_mode": "exact"},
+            manuscript=str(self.txt.resolve()),
+            cover=str(self.cover.resolve()),
+        )
+
+    def test_v2_long_txt_requires_strict_consecutive_chapter_headings(self) -> None:
+        bad_samples = {
+            "markdown": "# 第1章 开门\n\n正文",
+            "padded": "第001章 开门\n\n正文",
+            "gap": "第1章 开门\n\n正文\n\n第3章 散席\n\n正文",
+            "missing": "没有章节标题的正文",
+            "fullwidth": "第１章 开门\n\n正文",
+        }
+        for name, content in bad_samples.items():
+            with self.subTest(name=name):
+                self.txt.write_text(content, encoding="utf-8")
+                result = self.validate(self.v2_metadata(), manuscript=str(self.txt.resolve()), project_root=self.root)
+                self.assertFalse(result["ok"], result)
+        self.txt.write_bytes("第1章 开门\r\n\r\n正文\r\n\r\n第2章 来客\r\n\r\n正文\r\n".encode("utf-8"))
+        result = self.validate(self.v2_metadata(), manuscript=str(self.txt.resolve()), project_root=self.root)
+        chapter_errors = [item for item in result["errors"] if "长篇 TXT" in item]
+        self.assertEqual(chapter_errors, [], result)
+        self.assertTrue(result["manuscript"]["chapter_structure"]["valid"])
+
+    def test_v2_long_txt_rejects_utf8_bom(self) -> None:
+        self.txt.write_bytes(b"\xef\xbb\xbf" + "第1章 开门\r\n\r\n正文\r\n".encode("utf-8"))
+        result = self.validate(self.v2_metadata(), manuscript=str(self.txt.resolve()), project_root=self.root)
+        self.assertIn("UTF-8 无 BOM", "\n".join(result["errors"]))
+
+    def test_txt_rejects_invalid_utf8(self) -> None:
+        self.txt.write_bytes(b"\xff\xfe\x00\x00")
+        result = self.validate(manuscript="book.txt")
+        self.assertFalse(result["ok"])
+        self.assertIn("不是有效的 UTF-8", "\n".join(result["errors"]))
         self.assertEqual(result["rules"]["public_signing_guidance"]["checked_at"], "2026-08-12")
         self.assertIn("source", result["rules"]["field_and_file_snapshot"])
         self.assertIn("confidence", result["rules"]["historical_form_observation"])
