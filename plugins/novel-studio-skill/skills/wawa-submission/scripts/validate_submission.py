@@ -239,6 +239,41 @@ def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
+WAWA_CHAPTER_HEADING_RE = re.compile(r"^第([1-9][0-9]*)章[ \t]+([^\s].*)$")
+
+
+def _validate_wawa_txt_structure(path: Path, text: str, errors: list[str], info: dict[str, Any]) -> None:
+    """校验长篇 TXT 的平台分章契约。"""
+
+    structure: dict[str, Any] = {"checked": True, "valid": False, "chapter_count": 0}
+    info["chapter_structure"] = structure
+    if path.read_bytes().startswith(b"\xef\xbb\xbf"):
+        errors.append("长篇 TXT 必须为 UTF-8 无 BOM")
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+    if re.search(r"^#{1,6}[ \t]+", normalized, flags=re.MULTILINE):
+        errors.append("长篇 TXT 不得包含 Markdown 标题符号 #")
+    if re.search(r"^---[ \t]*$", normalized, flags=re.MULTILINE):
+        errors.append("长篇 TXT 不得包含 YAML frontmatter 分隔符 ---")
+    headings: list[tuple[int, str]] = []
+    malformed: list[str] = []
+    for line in normalized.split("\n"):
+        if not line.startswith("第") or "章" not in line:
+            continue
+        match = WAWA_CHAPTER_HEADING_RE.fullmatch(line)
+        if match:
+            headings.append((int(match.group(1)), match.group(2).strip()))
+        elif re.match(r"^第(?:[0-9０-９]+|[一二三四五六七八九十百千零〇两]+)章", line):
+            malformed.append(line[:80])
+    if malformed:
+        errors.append("长篇 TXT 章节标题必须严格使用“第1章 章名”，不得补零、使用中文数字或缺少标题")
+    numbers = [number for number, _ in headings]
+    if not headings:
+        errors.append("长篇 TXT 未找到可解析章节标题，须使用“第1章 章名”")
+    elif numbers != list(range(1, len(numbers) + 1)):
+        errors.append(f"长篇 TXT 章节编号必须从 1 连续且不得重复，当前为: {numbers}")
+    structure.update({"valid": not malformed and bool(headings) and numbers == list(range(1, len(numbers) + 1)), "chapter_count": len(headings), "numbers": numbers})
+
+
 def _valid_png(data: bytes) -> bool:
     if not data.startswith(b"\x89PNG\r\n\x1a\n"):
         return False
@@ -415,8 +450,13 @@ def _validate_manuscript(
             errors.append(f"{source_label}文件过大: {size} 字节，限制为 50MB")
     if extension == ".txt":
         try:
+            text = path.read_text(encoding="utf-8")
             info["parse_status"] = "parsed"
-            return _read_text(path)
+            return text
+        except UnicodeDecodeError:
+            info["parse_status"] = "invalid"
+            errors.append(f"{source_label} TXT 不是有效的 UTF-8 文本")
+            return None
         except OSError as exc:
             errors.append(f"无法读取{source_label}: {exc.__class__.__name__}")
             return None
@@ -1025,6 +1065,15 @@ def validate_submission(
         if has_manuscript
         else None
     )
+    if (
+        is_v2
+        and entry_category == "长篇"
+        and manuscript_text is not None
+        and manuscript_info.get("extension") == ".txt"
+    ):
+        manuscript_path = _resolve_path(manuscript_value, root, file_root)
+        if manuscript_path is not None:
+            _validate_wawa_txt_structure(manuscript_path, manuscript_text, errors, manuscript_info)
 
     project_info: dict[str, Any] | None = None
     project_text_count: int | None = None

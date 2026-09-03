@@ -88,6 +88,10 @@
 
 当前没有单一脚本能够机器认证“出版就绪”。`analyze_publication_risk.py` 只输出只读风险候选，`record_chapter_review.py` 只绑定章节级接受证据；两者都不能替代三类盲审或单独给出出版 PASS。只有上述证据齐全、确定性错误为零且阅读阻断项清零时，主 Agent 才能在 `汇总.md` 记录人工/模型工作流结论，并仍须向用户说明这不是平台录用、法律、版权或商业结果保证。
 
+## 投稿 TXT 导出
+
+全本门禁通过后，使用 `scripts/export_submission_txt.py --project-root <项目> --output <项目内输出.txt> --json` 从 `正文/` 权威章节生成平台副本。导出器只接受从 1 连续、标题非空且默认全部 `status: accepted` 的章节，输出 UTF-8 无 BOM、CRLF，并统一注入 `第1章 章名` 格式；不得手工拼接旧 TXT 或修改权威 Markdown 来适配平台。
+
 只把必修问题和残余风险交付给主 Agent；不把审稿解释混入正文。
 
 相关入口：planning-workflow.md 负责启动条件，reader-experience.md 负责回报与自然收束，chapter-workflow.md 负责写作、盲审和接受事务。

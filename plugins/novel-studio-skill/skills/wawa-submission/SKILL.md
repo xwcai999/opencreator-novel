@@ -42,17 +42,18 @@ description: Prepare Wawa Writer (蛙蛙写作) novel projects, emit execution-r
 这是默认模式。用户提供项目目录、投稿 TXT/DOC/DOCX 或完整小说后：
 
 1. 读取 `$novel-studio` 的 `作品.md`、当前状态、现有投稿就绪证据、封面和最终投稿正文。
-2. 先调用 `$novel-studio` 的现有项目校验，并按其篇幅规则执行相称的终稿审查：目标篇幅达到 5 万字时叠加 `publication-readiness.md`；低于 5 万字时不要强套五万字门禁。不要在本 Skill 重做连续性、盲审、封面生成或正文打包。
-3. 读取 `references/wawa-fields.md`、`references/submission-package-schema.md` 和 `assets/submission-material-template.md`；按当前频道与题材查询 `references/wawa-categories.json` 的相关分支，并在 `references/wawa-tags.json` 中核对所选标签。不要为普通投稿把完整分类树全部展开到上下文，也不在每次投稿时重新抓取网页。
-4. 从权威作品文件提取可证明的信息；笔名、历史成绩、截图和三级类目无法证明时标为“待确认”，禁止编造。
-5. 按 `references/submission-package-schema.md` 生成 `schema_version: 2` 的执行就绪投稿包 JSON，并运行：
+2. 长篇 TXT 必须由 `$novel-studio` 的 `scripts/export_submission_txt.py` 从 `正文/` 权威章节重新导出；不要复用无法证明章节结构的旧 TXT。标题严格使用 `第1章 章名`，编码为 UTF-8 无 BOM，禁止 Markdown `#`、补零编号、中文数字编号、缺号或重复编号。
+3. 先调用 `$novel-studio` 的现有项目校验，并按其篇幅规则执行相称的终稿审查：目标篇幅达到 5 万字时叠加 `publication-readiness.md`；低于 5 万字时不要强套五万字门禁。不要在本 Skill 重做连续性、盲审、封面生成或正文打包。
+4. 读取 `references/wawa-fields.md`、`references/submission-package-schema.md` 和 `assets/submission-material-template.md`；按当前频道与题材查询 `references/wawa-categories.json` 的相关分支，并在 `references/wawa-tags.json` 中核对所选标签。不要为普通投稿把完整分类树全部展开到上下文，也不在每次投稿时重新抓取网页。
+5. 从权威作品文件提取可证明的信息；笔名、历史成绩、截图和三级类目无法证明时标为“待确认”，禁止编造。
+6. 按 `references/submission-package-schema.md` 生成 `schema_version: 2` 的执行就绪投稿包 JSON，并运行：
 
 ```powershell
 python <本 Skill 目录>/scripts/validate_submission.py --metadata <元数据.json> --project-root <小说项目目录> --manuscript <投稿文件> --json
 ```
 
 只传实际存在的可选参数。将结果写入项目 `报告/蛙蛙投稿预检.json`，材料单写入 `报告/蛙蛙投稿材料.md`；没有标准项目时，写入用户指定目录。
-6. 三级类目必须匹配固定分类快照中的完整路径；页面标签必须来自固定标签快照，自定义标签仍按页面长度规则单独记录。修复材料层问题后重跑，直到材料阻断项为零或明确列出需要用户补充的字段。字数只记录为本地估算和页面回读信息，不作为本地预检或预填阻断；声明字数不能替代缺失或无法解析的真实正文。
+7. 三级类目必须匹配固定分类快照中的完整路径；页面标签必须来自固定标签快照，自定义标签仍按页面长度规则单独记录。修复材料层问题后重跑，直到材料阻断项为零或明确列出需要用户补充的字段。字数只记录为本地估算和页面回读信息，不作为本地预检或预填阻断；声明字数不能替代缺失或无法解析的真实正文。
 
 ## 页面连接与预填
 
