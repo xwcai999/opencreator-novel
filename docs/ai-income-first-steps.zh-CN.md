@@ -90,8 +90,8 @@
 
 ## 现在可以做什么
 
-1. **选音乐：**先看[当期活动条件](https://bytedance.larkoffice.com/docx/FDPpdRuQNo7PEdxAWupcfJo1nff)，再准备第一首作品；需要生成工具时可看 [Mureka](https://mureka.cn/?invite_code=j6jEbe)。
-2. **选小说：**从[本仓库的小说 Skill](../README.zh-CN.md#安装)开始，准备一份可读的稿件，再到[蛙蛙写作](https://wawawriter.com/app/?invitationCode=EYMDEQ)查看投稿入口。
-3. **看后续记录：**收藏[飞书原文](https://my.feishu.cn/wiki/IxD4wfnAVi4BhDkoNIfcSXoZnAf?from=from_copylink)；觉得工作流有用，也欢迎 Star [OpenCreator Novel](https://github.com/xwcai999/opencreator-novel)。
+1. **选音乐：** 先看[当期活动条件](https://bytedance.larkoffice.com/docx/FDPpdRuQNo7PEdxAWupcfJo1nff)，再准备第一首作品；需要生成工具时可看 [Mureka](https://mureka.cn/?invite_code=j6jEbe)。
+2. **选小说：** 从[本仓库的小说 Skill](../README.zh-CN.md#安装)开始，准备一份可读的稿件，再到[蛙蛙写作](https://wawawriter.com/app/?invitationCode=EYMDEQ)查看投稿入口。
+3. **看后续记录：** 收藏[飞书原文](https://my.feishu.cn/wiki/IxD4wfnAVi4BhDkoNIfcSXoZnAf?from=from_copylink)；觉得工作流有用，也欢迎 Star [OpenCreator Novel](https://github.com/xwcai999/opencreator-novel)。
 
 先把一份作品完整做出来，再记录生成、修改、投稿和收益数据，用自己的结果判断下一步是否继续投入。
