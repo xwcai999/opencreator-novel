@@ -30,6 +30,8 @@ OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生
 
 ## 蛙蛙写作邀请入口
 
+想了解从 AI 创作到发布作品的实际流程？阅读 **[《AI 挣钱第一弹：音乐与小说的个人实战》](docs/ai-income-first-steps.zh-CN.md)**，包含番茄音乐、Mureka、蛙蛙写作入口，个人收益截图及当期活动条件。
+
 想体验蛙蛙写作，可以通过本项目维护者的[邀请链接](https://wawawriter.com/app/?invitationCode=EYMDEQ)进入。邀请码：**`EYMDEQ`**。
 
 是否使用邀请入口由你选择；使用 OpenCreator Novel 无需注册蛙蛙写作账号。

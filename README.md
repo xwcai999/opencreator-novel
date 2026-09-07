@@ -30,6 +30,8 @@ See the bilingual [Privacy Policy](PRIVACY.md), [Terms of Use](TERMS.md), and [S
 
 ## Wawa Writer invitation
 
+Read **[AI Income, Part 1: Personal Experiments with Music and Fiction (Chinese)](docs/ai-income-first-steps.zh-CN.md)** for the author's workflow, earnings screenshots, invitation links, and dated campaign conditions.
+
 Want to try Wawa Writer? Visit the maintainer's [invitation link](https://wawawriter.com/app/?invitationCode=EYMDEQ). Invitation code: **`EYMDEQ`**.
 
 Using this invitation is optional. OpenCreator Novel does not require a Wawa Writer account.
