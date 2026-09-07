@@ -28,6 +28,12 @@ This is guidance and tooling, not an automatic quality or publication guarantee.
 
 See the bilingual [Privacy Policy](PRIVACY.md), [Terms of Use](TERMS.md), and [Security Policy](SECURITY.md) before public or team deployment.
 
+## Wawa Writer invitation
+
+Want to try Wawa Writer? Visit the maintainer's [invitation link](https://wawawriter.com/app/?invitationCode=EYMDEQ). Invitation code: **`EYMDEQ`**.
+
+Using this invitation is optional. OpenCreator Novel does not require a Wawa Writer account.
+
 ## Installation
 
 ### Codex plugin installation

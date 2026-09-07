@@ -28,6 +28,12 @@ OpenCreator Novel 是 [OpenCreator](https://github.com/xwcai999/opencreator) 生
 
 公开或团队部署前，请阅读双语[隐私政策](PRIVACY.md)、[使用条款](TERMS.md)与[安全政策](SECURITY.md)。
 
+## 蛙蛙写作邀请入口
+
+想体验蛙蛙写作，可以通过本项目维护者的[邀请链接](https://wawawriter.com/app/?invitationCode=EYMDEQ)进入。邀请码：**`EYMDEQ`**。
+
+是否使用邀请入口由你选择；使用 OpenCreator Novel 无需注册蛙蛙写作账号。
+
 ## 安装
 
 ### 作为 Codex 插件安装
